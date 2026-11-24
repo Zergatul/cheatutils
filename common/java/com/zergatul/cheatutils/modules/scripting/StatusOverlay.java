@@ -7,20 +7,18 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FontConfig;
-import com.zergatul.cheatutils.configs.StatusOverlayConfig;
+import com.zergatul.cheatutils.concurrent.ClientThread;
+import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.StatusOverlayConfig;
+import com.zergatul.cheatutils.configs.utility.FontConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.render.RenderTargets;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
-import com.zergatul.cheatutils.scripting.workspace.ScriptSaveResult;
-import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 import com.zergatul.cheatutils.ui.*;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.CodeWebApiBase;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -38,19 +36,20 @@ import java.util.concurrent.CompletableFuture;
 
 public class StatusOverlay implements Module, FontBackendHolder {
 
-    public static final StatusOverlay instance = new StatusOverlay();
+    public static final StatusOverlay INSTANCE = new StatusOverlay();
 
     private static final int DEFAULT_BACKGROUND = 0x90505050;
 
-    private static final Minecraft mc = Minecraft.getInstance();
+    private final SettingHandle<StatusOverlayConfig> settings = Settings.get(StatusOverlayConfig.class);
+    private final Minecraft mc = Minecraft.getInstance();
     private final Map<Align, List<AlignedText>> texts = new HashMap<>();
     private final List<FreeText> freeTexts = new ArrayList<>();
-    private volatile ScriptActivation<Runnable> script;
+    private ScriptActivation<Runnable> script; // client thread
     private HorizontalAlign hAlign;
     private VerticalAlign vAlign;
     private int backgroundColor;
 
-    private boolean fontChanged;
+    private @Nullable FontConfig appliedFont;
     private CompletableFuture<FontBackend> fontBackendFuture;
     private FontRenderer fontRenderer;
 
@@ -67,16 +66,17 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
     }
 
+    public SettingHandle<StatusOverlayConfig> getSettings() {
+        return settings;
+    }
+
     @Override
     public boolean uses(FontBackend backend) {
         return fontRenderer != null && fontRenderer.uses(backend);
     }
 
-    public void onFontChange() {
-        ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
-    }
-
     public void setScript(Runnable script) {
+        ClientThread.assertCurrent();
         ScriptActivation<Runnable> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -117,21 +117,21 @@ public class StatusOverlay implements Module, FontBackendHolder {
             return;
         }
 
-        StatusOverlayConfig config = ConfigStore.instance.getConfig().statusOverlayConfig;
+        StatusOverlayConfig config = settings.get();
         ScriptActivation<Runnable> script = this.script;
-        if (!config.enabled || script == null || !script.isActive()) {
+        if (!config.enabled() || script == null || !script.isActive()) {
             return;
         }
 
-        if (fontChanged) {
-            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+        if (!config.font().equals(appliedFont)) {
+            appliedFont = config.font();
+            fontBackendFuture = FontLibrary.INSTANCE.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
-            fontChanged = false;
         }
 
         if (fontBackendFuture != null) {
             if (fontBackendFuture.isDone()) {
-                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font().asFontRenderDetails());
                 fontBackendFuture = null;
             }
         }
@@ -259,6 +259,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
     @NullMarked
     private static class MyGuiRenderElement implements GuiElementRenderState {
 
+        private final Minecraft mc = Minecraft.getInstance();
+
         @Override
         public void buildVertices(VertexConsumer vertexConsumer) {
             final float z = 0.1f;
@@ -294,33 +296,29 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
     }
 
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<StatusOverlayConfig> {
+    private final class ConfigWebApi extends WebApiBase {
 
-        public ConfigWebApi() {
-            super("status-overlay", StatusOverlayConfig.class);
+        @Override
+        public String getRoute() {
+            return "status-overlay";
         }
 
         @Override
-        protected StatusOverlayConfig getConfig() {
-            return ConfigStore.instance.getConfig().statusOverlayConfig;
+        public String get() {
+            return gson.toJson(settings.get());
         }
 
         @Override
-        protected void setConfig(StatusOverlayConfig config) {
-            StatusOverlayConfig existingConfig = ConfigStore.instance.getConfig().statusOverlayConfig;
-            existingConfig.enabled = config.enabled;
-
-            FontConfig oldFont = existingConfig.font;
-            FontConfig newFont = config.font;
-
-            if (!oldFont.equals(newFont)) {
-                existingConfig.font = newFont;
-                StatusOverlay.instance.onFontChange();
+        public String post(String body) {
+            StatusOverlayConfig.UpdateOptions options = gson.fromJson(body, StatusOverlayConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
             }
+            return get();
         }
     }
 
-    private static final class CodeWebApi extends WebApiBase {
+    private static final class CodeWebApi extends CodeWebApiBase {
 
         @Override
         public String getRoute() {
@@ -328,14 +326,8 @@ public class StatusOverlay implements Module, FontBackendHolder {
         }
 
         @Override
-        public String post(String body) throws Throwable {
-            String code = gson.fromJson(body, String.class);
-            ScriptSaveResult result = ScriptWorkspace.INSTANCE.get(ScriptType.OVERLAY).save(code);
-            if (result.isSuccess()) {
-                return "{ \"ok\": true }";
-            } else {
-                return gson.toJson(result.getDiagnostics());
-            }
+        protected ScriptType getScriptType() {
+            return ScriptType.OVERLAY;
         }
     }
 }

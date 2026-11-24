@@ -61,8 +61,8 @@ public class ScriptRuntimeFailureHandlerTests {
 
     @Test
     public void startupCompilationFailureCreatesOneNotificationForAllDiagnostics() {
-        var compilation = new Compiler(ScriptType.KEYBINDING.createParameters()).compile("unknownName(); anotherUnknownName();");
-        assertNull(compilation.getProgram());
+        var compilation = new Compiler(ScriptType.KEYBINDING.createParameters()).compileInstance("unknownName(); anotherUnknownName();");
+        assertFalse(compilation.isSuccess());
         assertNotNull(compilation.getDiagnostics());
         assertTrue(compilation.getDiagnostics().size() >= 2);
         handler.reportCompilationFailure(

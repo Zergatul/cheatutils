@@ -1,14 +1,15 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoFishConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoFishConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -16,27 +17,34 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+@NullMarked
 public class AutoFish implements Module {
 
-    public static final AutoFish instance = new AutoFish();
+    public static final AutoFish INSTANCE = new AutoFish();
 
     private static final long PULL_IN_DELAY_MS = 500;
 
+    private final SettingHandle<AutoFishConfig> settings = Settings.get(AutoFishConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
-    private volatile State state = State.NONE;
-    private Optional<FishingHook> bobber = Optional.empty();
+    private State state = State.NONE;
+    private @Nullable FishingHook bobber;
     private long lastPullInTime;
 
     private AutoFish() {
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-fish", settings, AutoFishConfig.class);
+    }
+
+    public SettingHandle<AutoFishConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -45,8 +53,8 @@ public class AutoFish implements Module {
             return;
         }
 
-        AutoFishConfig config = ConfigStore.instance.getConfig().autoFishConfig;
-        if (!config.enabled) {
+        AutoFishConfig config = settings.get();
+        if (!config.enabled()) {
             state = State.NONE;
             return;
         }
@@ -65,18 +73,24 @@ public class AutoFish implements Module {
                         mc.player.getY() + 100,
                         mc.player.getZ() + 100);
                 List<FishingHook> bobbers = mc.level.getEntitiesOfClass(FishingHook.class, box);
-                bobber = bobbers.stream().filter(b -> b.getPlayerOwner() == mc.player).findFirst();
-                if (bobber.isPresent()) {
+                bobber = bobbers.stream()
+                        .filter(b -> b.getPlayerOwner() == mc.player)
+                        .findFirst()
+                        .orElse(null);
+                if (bobber != null) {
                     state = State.WAITING_FOR_SOUND;
                 }
             }
             case WAITING_FOR_SOUND -> {
-                if (mc.level.getEntity(bobber.get().getId()) == null) {
+                if (bobber == null) {
+                    throw new IllegalStateException("Bobber is null.");
+                }
+                if (mc.level.getEntity(bobber.getId()) == null) {
                     // bobber disappeared
                     state = State.WAITING_FOR_BOBBER;
                     break;
                 }
-                if (config.autoRestartOnIdle && TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - lastPullInTime) > config.idleTimeout) {
+                if (config.autoRestartOnIdle() && TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - lastPullInTime) > config.idleTimeout()) {
                     ((MinecraftAccessor) mc).startUseItem_CU();
                     state = State.DELAY_AFTER_PULL_IN;
                     lastPullInTime = System.nanoTime();
@@ -99,14 +113,15 @@ public class AutoFish implements Module {
         }
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (args.packet instanceof ClientboundSoundPacket soundPacket && soundPacket.getSound().value() == SoundEvents.FISHING_BOBBER_SPLASH) {
-            if (state == State.WAITING_FOR_SOUND && bobber.isPresent()) {
-                if (bobber.get().distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
+        if (packet instanceof ClientboundSoundPacket soundPacket && soundPacket.getSound().value() == SoundEvents.FISHING_BOBBER_SPLASH) {
+            if (state == State.WAITING_FOR_SOUND && bobber != null) {
+                if (bobber.distanceToSqr(soundPacket.getX(), soundPacket.getY(), soundPacket.getZ()) < 1) {
                     state = State.PULL_IN;
                 }
             }
         }
+        return true;
     }
 
     private enum State {
@@ -115,22 +130,5 @@ public class AutoFish implements Module {
         WAITING_FOR_SOUND,
         PULL_IN,
         DELAY_AFTER_PULL_IN,
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoFishConfig> {
-
-        public WebApi() {
-            super("auto-fish", AutoFishConfig.class);
-        }
-
-        @Override
-        protected AutoFishConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoFishConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoFishConfig config) {
-            ConfigStore.instance.getConfig().autoFishConfig = config;
-        }
     }
 }

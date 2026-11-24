@@ -21,7 +21,7 @@ public abstract class MixinOptions {
 
     @Inject(at = @At("HEAD"), method = "bobView()Lnet/minecraft/client/OptionInstance;", cancellable = true)
     private void onBobView(CallbackInfoReturnable<OptionInstance<Boolean>> info) {
-        if (FreeCam.instance.isActive()) {
+        if (FreeCam.INSTANCE.isActive()) {
             info.setReturnValue(OptionInstance.createBoolean("", false));
         }
     }

@@ -1,6 +1,5 @@
 package com.zergatul.cheatutils.concurrent;
 
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

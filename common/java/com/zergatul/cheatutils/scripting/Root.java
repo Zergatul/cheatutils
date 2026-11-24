@@ -22,6 +22,7 @@ public class Root {
     public static SpearRangeApi spearRange = new SpearRangeApi();
     public static ElytraBounceApi elytraBounce = new ElytraBounceApi();
     public static ParkourAssistApi parkourAssist = new ParkourAssistApi();
+    public static AutoFishApi autoFish = new AutoFishApi();
 
     // ESP
     public static BlocksApi blocks = new BlocksApi();

@@ -3,12 +3,13 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.UserNameConfig;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.hacks.AirPlace;
 import com.zergatul.cheatutils.modules.hacks.InvMove;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
+import com.zergatul.cheatutils.modules.utilities.UserName;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -32,9 +33,6 @@ public abstract class MixinMinecraft {
     public ClientLevel level;
 
     @Shadow
-    protected abstract void continueAttack(boolean down);
-
-    @Shadow
     public abstract boolean isGameLoadFinished();
 
     //Start Attack method, event triggers ==================================
@@ -51,7 +49,7 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
     public void onShouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> info) {
-        if (EntityEsp.instance.shouldEntityHaveOutline(entity)) {
+        if (EntityEsp.INSTANCE.shouldEntityHaveOutline(entity)) {
             info.setReturnValue(true);
             info.cancel();
         }
@@ -74,11 +72,11 @@ public abstract class MixinMinecraft {
 
     @Inject(at = @At("RETURN"), method = "createTitle()Ljava/lang/String;", cancellable = true)
     private void onCreateTitle(CallbackInfoReturnable<String> info) {
-        if (ConfigStore.instance.getConfig().userNameConfig.showNameInTitle) {
+        UserNameConfig config = UserName.INSTANCE.getSettings().get();
+        if (config.showNameInTitle()) {
             info.setReturnValue(Minecraft.getInstance().getUser().getName() + " - " + info.getReturnValue());
         }
     }
-
 
     @Inject(at = @At("HEAD"), method = "tick()V")
     private void onBeforeTick(CallbackInfo info) {
@@ -165,11 +163,11 @@ public abstract class MixinMinecraft {
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;continueAttack(Z)V"))
     private boolean onShouldContinueAttack(Minecraft instance, boolean down) {
-        if (VillagerRoller.instance.isBreakingBlock()) {
+        if (VillagerRoller.INSTANCE.isBreakingBlock()) {
             return false;
         }
 
-        if (BlockAutomation.instance.isBreakingBlock()) {
+        if (BlockAutomation.INSTANCE.isBreakingBlock()) {
             return false;
         }
 
@@ -180,7 +178,7 @@ public abstract class MixinMinecraft {
             method = "tick",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;screen()Lnet/minecraft/client/gui/screens/Screen;"))
     private Screen onTickScreenPassEvents(Screen screen) {
-        return InvMove.instance.overrideCurrentScreen(screen);
+        return InvMove.INSTANCE.overrideCurrentScreen(screen);
     }
 
     @Inject(at = @At(value = "TAIL"), method = "resizeGui()V")
@@ -190,7 +188,7 @@ public abstract class MixinMinecraft {
 
     @Inject(method = "startUseItem", at = @At("HEAD"))
     private void onBeforeStartUseItem(CallbackInfo info) {
-        AirPlace.instance.onBeforeStartUseItem();
+        AirPlace.INSTANCE.onBeforeStartUseItem();
     }
 
     @Inject(method = "pick", at = @At("HEAD"))

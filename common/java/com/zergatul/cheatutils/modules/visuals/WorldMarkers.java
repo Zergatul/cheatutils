@@ -3,13 +3,15 @@ package com.zergatul.cheatutils.modules.visuals;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.WorldMarkersConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingNotificationReason;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.WorldMarkerEntry;
+import com.zergatul.cheatutils.configs.modules.WorldMarkersConfig;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.ui.*;
 import com.zergatul.cheatutils.utils.ColorUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -22,8 +24,9 @@ import java.util.concurrent.ExecutionException;
 
 public class WorldMarkers implements FontBackendHolder {
 
-    public static final WorldMarkers instance = new WorldMarkers();
+    public static final WorldMarkers INSTANCE = new WorldMarkers();
 
+    private final SettingHandle<WorldMarkersConfig> settings = Settings.get(WorldMarkersConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private boolean fontChanged;
@@ -32,12 +35,17 @@ public class WorldMarkers implements FontBackendHolder {
 
     private WorldMarkers() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast, 10);
+        settings.observe(this::onConfigChanged);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("world-markers", settings, WorldMarkersConfig.class);
         WebApiRegistry.INSTANCE.register(new DimensionWebApi());
         WebApiRegistry.INSTANCE.register(new CoordinatesWebApi());
 
         FontBackendHolders.add(this);
+    }
+
+    public SettingHandle<WorldMarkersConfig> getSettings() {
+        return settings;
     }
 
     @Override
@@ -45,8 +53,19 @@ public class WorldMarkers implements FontBackendHolder {
         return fontRenderer != null && fontRenderer.uses(backend);
     }
 
-    public void onFontChange() {
-        ClientTickEndExecutor.instance.execute(() -> fontChanged = true);
+    private void onConfigChanged(SettingNotificationReason reason, WorldMarkersConfig prev, WorldMarkersConfig curr) {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
+            switch (reason) {
+                case INITIAL -> {
+                    fontChanged = true;
+                }
+                case PROFILE_LOAD, UPDATE -> {
+                    if (!prev.font().equals(curr.font())) {
+                        fontChanged = true;
+                    }
+                }
+            }
+        });
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
@@ -54,20 +73,20 @@ public class WorldMarkers implements FontBackendHolder {
             return;
         }
 
-        WorldMarkersConfig config = ConfigStore.instance.getConfig().worldMarkersConfig;
-        if (!config.enabled) {
+        WorldMarkersConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
         if (fontChanged) {
-            fontBackendFuture = FontLibrary.instance.createBackend(config.font.asFontParameters());
+            fontBackendFuture = FontLibrary.INSTANCE.createBackend(config.font().asFontParameters());
             // fontRenderer = null; // more smooth transition, but shows prev font for few frames?
             fontChanged = false;
         }
 
         if (fontBackendFuture != null) {
             if (fontBackendFuture.isDone()) {
-                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font.asFontRenderDetails());
+                fontRenderer = fontBackendFuture.join().createFontRenderer(config.font().asFontRenderDetails());
                 fontBackendFuture = null;
             }
         }
@@ -93,18 +112,18 @@ public class WorldMarkers implements FontBackendHolder {
 
         try (RenderingContext context = new RenderingContext(matrix, scale)) {
             String dimension = mc.level.dimension().identifier().toString();
-            for (WorldMarkersConfig.Entry entry : config.entries) {
-                if (!entry.enabled) {
+            for (WorldMarkerEntry entry : config.entries()) {
+                if (!entry.enabled()) {
                     continue;
                 }
-                if (!dimension.equals(entry.dimension)) {
+                if (!dimension.equals(entry.dimension())) {
                     continue;
                 }
 
-                double x = entry.x - view.x;
-                double y = entry.y - view.y;
-                double z = entry.z - view.z;
-                if (x * x + y * y + z * z < entry.minDistance * entry.minDistance) {
+                double x = entry.x() - view.x;
+                double y = entry.y() - view.y;
+                double z = entry.z() - view.z;
+                if (x * x + y * y + z * z < entry.minDistance() * entry.minDistance()) {
                     continue;
                 }
 
@@ -118,46 +137,24 @@ public class WorldMarkers implements FontBackendHolder {
                 int xc = Math.round(v2.x * invW * halfScrWidth);
                 int yc = Math.round(-v2.y * invW * halfScrHeight);
 
-                int color = entry.color.getRGB();
+                int color = entry.color().getRGB();
                 int inverse = ColorUtils.inverse(color);
 
-                StylizedText text = StylizedText.of(entry.name, entry.color.getRGB());
+                StylizedText text = StylizedText.of(entry.name(), entry.color().getRGB());
                 FlexColumnElement flex = new FlexColumnElement();
                 flex.append(
                         new DivisionElement()
                                 .setBackgroundColor(inverse & 0x40FFFFFF)
-                                .setBorderWidth(config.borderWidth)
-                                .setBorderColor(entry.color.getRGB())
+                                .setBorderWidth(config.borderWidth())
+                                .setBorderColor(entry.color().getRGB())
                                 .setMargin(scale)
                                 .setContent(
                                         new TextElement(fontRenderer, text)
                                                 .setCompactHeight(true)));
                 flex.append(
-                        new RectangleElement(config.borderWidth, (int) fontRenderer.getLineHeight(), entry.color.getRGB()));
+                        new RectangleElement(config.borderWidth(), (int) fontRenderer.getLineHeight(), entry.color().getRGB()));
 
                 context.render(flex, xc, yc - scale, HorizontalAlign.CENTER, VerticalAlign.BOTTOM);
-            }
-        }
-    }
-
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<WorldMarkersConfig> {
-
-        public ConfigWebApi() {
-            super("world-markers", WorldMarkersConfig.class);
-        }
-
-        @Override
-        protected WorldMarkersConfig getConfig() {
-            return ConfigStore.instance.getConfig().worldMarkersConfig;
-        }
-
-        @Override
-        protected void setConfig(WorldMarkersConfig config) {
-            WorldMarkersConfig oldConfig = ConfigStore.instance.getConfig().worldMarkersConfig;
-            ConfigStore.instance.getConfig().worldMarkersConfig = config;
-
-            if (!oldConfig.font.equals(config.font)) {
-                WorldMarkers.instance.onFontChange();
             }
         }
     }
@@ -171,7 +168,7 @@ public class WorldMarkers implements FontBackendHolder {
 
         @Override
         public String get() throws ExecutionException, InterruptedException {
-            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+            return gson.toJson(ClientTickEndExecutor.INSTANCE.submit(() -> {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.level == null) {
                     return null;
@@ -190,7 +187,7 @@ public class WorldMarkers implements FontBackendHolder {
 
         @Override
         public String get() throws ExecutionException, InterruptedException {
-            return gson.toJson(ClientTickEndExecutor.instance.submit(() -> {
+            return gson.toJson(ClientTickEndExecutor.INSTANCE.submit(() -> {
                 Minecraft mc = Minecraft.getInstance();
                 if (mc.player == null) {
                     return null;

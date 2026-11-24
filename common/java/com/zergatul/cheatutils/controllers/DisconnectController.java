@@ -1,16 +1,16 @@
 package com.zergatul.cheatutils.controllers;
 
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 
 public class DisconnectController {
 
-    public static final DisconnectController instance = new DisconnectController();
+    public static final DisconnectController INSTANCE = new DisconnectController();
 
     private final Minecraft mc = Minecraft.getInstance();
     private String addText;
@@ -20,7 +20,7 @@ public class DisconnectController {
             return component;
         }
 
-        if (component == null || component.getString().length() == 0) {
+        if (component == null || component.getString().isEmpty()) {
             component = MutableComponent.create(new PlainTextContents.LiteralContents(addText));
         } else {
             component = component.copy().append("\n").append(addText);
@@ -56,6 +56,6 @@ public class DisconnectController {
         }
 
         addText = message;
-        NetworkPacketsController.instance.sendPacket(new ServerboundAttackPacket(mc.player.getId()));
+        PacketUtils.send(mc.player, new ServerboundAttackPacket(mc.player.getId()));
     }
 }

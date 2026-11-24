@@ -29,7 +29,7 @@ public class WorldDownloadChunkOverlay extends AbstractChunkOverlay {
     }
 
     public void notifyChunkSaved(Dimension dimension, int x, int z) {
-        PreRenderGuiExecutor.instance.execute(() -> {
+        PreRenderGuiExecutor.INSTANCE.execute(() -> {
             ChunkPos chunkPos = new ChunkPos(x, z);
             SegmentPos segmentPos = new SegmentPos(chunkPos, segmentSize);
             Map<SegmentPos, Segment> segments = getSegmentsMap(dimension);

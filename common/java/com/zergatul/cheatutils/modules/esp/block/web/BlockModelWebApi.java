@@ -50,7 +50,7 @@ public class BlockModelWebApi extends WebApiBase {
     }
 
     @Override
-    public String get(String id) throws ApiException, ExecutionException, InterruptedException {
+    public String get(String id) throws ExecutionException, InterruptedException {
         Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, id);
         if (block == null) {
             throw new ApiException("Cannot find block by id.", HttpResponseCodes.NOT_FOUND);

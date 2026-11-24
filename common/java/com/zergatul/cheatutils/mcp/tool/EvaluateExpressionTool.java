@@ -3,7 +3,7 @@ package com.zergatul.cheatutils.mcp.tool;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.configs.modules.McpServerConfig;
 import com.zergatul.cheatutils.mcp.McpItemStatus;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.mcp.utility.Serializer;
@@ -145,7 +145,7 @@ public class EvaluateExpressionTool implements McpTool {
             return status;
         }
 
-        if (!config.allowEvaluatingExpressions) {
+        if (!config.allowEvaluatingExpressions()) {
             return McpItemStatus.disabled("Disabled by CheatUtils MCP Server settings: allowEvaluatingExpressions is false.");
         }
 

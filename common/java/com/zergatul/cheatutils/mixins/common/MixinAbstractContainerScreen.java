@@ -3,9 +3,8 @@ package com.zergatul.cheatutils.mixins.common;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerScreenCalculateHoveredSlotEvent;
 import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
-import com.zergatul.cheatutils.controllers.ContainerButtonsController;
+import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
+import com.zergatul.cheatutils.modules.automation.ContainerButtons;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -45,14 +44,14 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
     @Inject(at = @At("TAIL"), method = "init()V")
     private void onInit(CallbackInfo info) {
         Screen self = this;
-        if (!ContainerButtonsController.instance.isValidScreen(self)) {
+        if (!ContainerButtons.INSTANCE.isValidScreen(self)) {
             return;
         }
 
-        ContainerButtonsConfig config = ConfigStore.instance.getConfig().containerButtonsConfig;
+        ContainerButtonsConfig config = ContainerButtons.INSTANCE.getSettings().get();
         int cursor = this.leftPos + this.imageWidth;
         int space = 4;
-        if (config.showTakeAll) {
+        if (config.showTakeAll()) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
@@ -62,7 +61,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
                             .build());
             cursor -= space;
         }
-        if (config.showSmartPut) {
+        if (config.showSmartPut()) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
@@ -72,7 +71,7 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
                             .build());
             cursor -= space;
         }
-        if (config.showDropAll) {
+        if (config.showDropAll()) {
             int btnWidth = 72;
             int btnHeight = 20;
             cursor -= btnWidth;
@@ -96,17 +95,17 @@ public abstract class MixinAbstractContainerScreen<T extends AbstractContainerMe
 
     @Unique
     private void onTakeAllPress_CU(Button button) {
-        ContainerButtonsController.instance.takeAll(false);
+        ContainerButtons.INSTANCE.takeAll(false);
     }
 
     @Unique
     private void onSmartPutPress_CU(Button button) {
-        ContainerButtonsController.instance.smartPut();
+        ContainerButtons.INSTANCE.smartPut();
     }
 
     @Unique
     private void onDropAllPress_CU(Button button) {
-        ContainerButtonsController.instance.dropAll(false);
+        ContainerButtons.INSTANCE.dropAll(false);
     }
 
     @Inject(at = @At("HEAD"), method = "getHoveredSlot", cancellable = true)

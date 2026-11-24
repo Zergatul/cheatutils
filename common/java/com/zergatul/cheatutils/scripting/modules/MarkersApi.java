@@ -1,13 +1,13 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.WorldMarkersConfig;
+import com.zergatul.cheatutils.collections.ImmutableList;
+import com.zergatul.cheatutils.configs.modules.WorldMarkerEntry;
+import com.zergatul.cheatutils.modules.visuals.WorldMarkers;
 import com.zergatul.cheatutils.utils.ColorUtils;
 import com.zergatul.scripting.MethodDescription;
 import net.minecraft.client.Minecraft;
 
 import java.awt.*;
-import java.util.Optional;
 
 public class MarkersApi {
 
@@ -24,46 +24,45 @@ public class MarkersApi {
             return;
         }
 
-        WorldMarkersConfig config = getConfig();
-        config.entries.removeIf(e -> e.name.equals(name));
+        WorldMarkers.INSTANCE.getSettings().update(config -> {
+            ImmutableList<WorldMarkerEntry> entries = config.entries().removeAll(e -> e.name().equals(name));
+            WorldMarkerEntry entry = WorldMarkerEntry.Builder.from(WorldMarkerEntry.defaults())
+                    .name(name)
+                    .dimension(mc.level.dimension().identifier().toString())
+                    .x(x)
+                    .y(y)
+                    .z(z)
+                    .minDistance(minDistance)
+                    .color(colorValue)
+                    .enabled(true)
+                    .build();
 
-        WorldMarkersConfig.Entry entry = new WorldMarkersConfig.Entry();
-        entry.name = name;
-        entry.dimension = mc.level.dimension().identifier().toString();
-        entry.x = x;
-        entry.y = y;
-        entry.z = z;
-        entry.minDistance = minDistance;
-        entry.color = colorValue;
-        entry.enabled = true;
-        entry.validate();
-
-        config.entries.add(entry);
-        ConfigStore.instance.requestWrite();
-    }
-
-    public void removeByName(String name) {
-        if (getConfig().entries.removeIf(e -> e.name.equals(name))) {
-            ConfigStore.instance.requestWrite();
-        }
-    }
-
-    public boolean isEnabled(String name) {
-        return getEntry(name).map(e -> e.enabled).orElse(false);
-    }
-
-    public void toggle(String name) {
-        getEntry(name).ifPresent(e -> {
-            e.enabled = !e.enabled;
-            ConfigStore.instance.requestWrite();
+            return config.withEntries(entries.add(entry));
         });
     }
 
-    private Optional<WorldMarkersConfig.Entry> getEntry(String name) {
-        return getConfig().entries.stream().filter(e -> e.name.equals(name)).findFirst();
+    public void removeByName(String name) {
+        WorldMarkers.INSTANCE.getSettings().update(config -> {
+            return config.withEntries(config.entries().removeAll(e -> e.name().equals(name)));
+        });
     }
 
-    private WorldMarkersConfig getConfig() {
-        return ConfigStore.instance.getConfig().worldMarkersConfig;
+    public boolean isEnabled(String name) {
+        return WorldMarkers.INSTANCE.getSettings().get()
+                .entries()
+                .stream()
+                .filter(e -> e.name().equals(name))
+                .findFirst()
+                .map(WorldMarkerEntry::enabled)
+                .orElse(false);
+    }
+
+    public void toggle(String name) {
+        WorldMarkers.INSTANCE.getSettings().update(config -> {
+            return config.withEntries(
+                    config.entries().replaceFirst(
+                            e -> e.name().equals(name),
+                            e -> e.withEnabled(!e.enabled())));
+        });
     }
 }

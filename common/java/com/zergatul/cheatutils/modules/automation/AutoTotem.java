@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoTotemConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoTotemConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -16,14 +16,19 @@ import net.minecraft.world.item.ItemStack;
 
 public class AutoTotem implements Module {
 
-    public static final AutoTotem instance = new AutoTotem();
+    public static final AutoTotem INSTANCE = new AutoTotem();
 
+    private final SettingHandle<AutoTotemConfig> settings = Settings.get(AutoTotemConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoTotem() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-totem", settings, AutoTotemConfig.class);
+    }
+
+    public SettingHandle<AutoTotemConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -31,12 +36,12 @@ public class AutoTotem implements Module {
             return;
         }
 
-        AutoTotemConfig config = ConfigStore.instance.getConfig().autoTotemConfig;
-        if (!config.enabled) {
+        AutoTotemConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
-        if (config.skipIfUsingItem && mc.player.isUsingItem()) {
+        if (config.skipIfUsingItem() && mc.player.isUsingItem()) {
             return;
         }
 
@@ -55,23 +60,6 @@ public class AutoTotem implements Module {
             if (totemSlot >= 0) {
                 InventoryUtils.moveItemStack(new InventorySlot(totemSlot), new InventorySlot(EquipmentSlot.OFFHAND));
             }
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoTotemConfig> {
-
-        public WebApi() {
-            super("auto-totem", AutoTotemConfig.class);
-        }
-
-        @Override
-        protected AutoTotemConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoTotemConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoTotemConfig config) {
-            ConfigStore.instance.getConfig().autoTotemConfig = config;
         }
     }
 }

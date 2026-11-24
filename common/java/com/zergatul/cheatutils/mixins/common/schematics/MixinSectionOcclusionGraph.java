@@ -17,6 +17,6 @@ public abstract class MixinSectionOcclusionGraph {
         if (!set.contains(index)) {
             return false;
         }
-        return !Schematica.instance.hasBlocksAtSection(index);
+        return !Schematica.INSTANCE.hasBlocksAtSection(index);
     }
 }

@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.configs.ConfigStore;
 
 public abstract class WebApiBase {
 
-    protected Gson gson = ConfigStore.instance.gson;
+    protected Gson gson = ConfigStore.INSTANCE.gson;
 
     public abstract String getRoute();
 

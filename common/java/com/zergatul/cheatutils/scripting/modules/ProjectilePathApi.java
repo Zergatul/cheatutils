@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ProjectilePathConfig;
+import com.zergatul.cheatutils.configs.modules.ProjectilePathConfig;
+import com.zergatul.cheatutils.modules.esp.ProjectilePath;
 
-public class ProjectilePathApi extends ModuleApi<ProjectilePathConfig> {
-
-    @Override
-    protected ProjectilePathConfig getConfig() {
-        return ConfigStore.instance.getConfig().projectilePathConfig;
+public class ProjectilePathApi extends SettingHandleApi<ProjectilePathConfig> {
+    public ProjectilePathApi() {
+        super(ProjectilePath.INSTANCE.getSettings());
     }
 }

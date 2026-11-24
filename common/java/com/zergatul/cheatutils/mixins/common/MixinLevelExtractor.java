@@ -29,6 +29,6 @@ public abstract class MixinLevelExtractor {
             @Local(name = "entity") Entity entity,
             @Local(name = "state") EntityRenderState state
     ) {
-        EntityEsp.instance.captureEntityRenderState(entity, state);
+        EntityEsp.INSTANCE.captureEntityRenderState(entity, state);
     }
 }

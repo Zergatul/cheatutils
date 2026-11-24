@@ -28,7 +28,7 @@ import java.util.*;
 
 public class CacheItemRenderer {
 
-    public static final CacheItemRenderer instance = new CacheItemRenderer();
+    public static final CacheItemRenderer INSTANCE = new CacheItemRenderer();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();

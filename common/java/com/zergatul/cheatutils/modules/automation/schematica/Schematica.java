@@ -5,8 +5,10 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.SchematicaConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.SchematicaConfig;
+import com.zergatul.cheatutils.configs.modules.SchematicaWorldSlice;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.automation.schematica.formats.LitematicaOutputFile;
@@ -50,10 +52,11 @@ import java.util.function.Function;
 
 public class Schematica implements Module {
 
-    public static final Schematica instance = new Schematica();
+    public static final Schematica INSTANCE = new Schematica();
 
     private static final Strategy<BlockState> STRATEGY = Strategy.createForBlockStates(Block.BLOCK_STATE_REGISTRY);
 
+    private final SettingHandle<SchematicaConfig> settings = Settings.get(SchematicaConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();
     private final SlotSelector slotSelector = new SlotSelector();
@@ -66,8 +69,9 @@ public class Schematica implements Module {
         Events.RawBlockUpdated.add(this::onBlockUpdated);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.AfterRenderWorld.add(this::onRender);
+        settings.onChanged(this::onConfigChanged);
 
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi());
+        WebApiRegistry.INSTANCE.register("schematica", settings, SchematicaConfig.class);
         WebApiRegistry.INSTANCE.register(new DownloadWebApi());
         WebApiRegistry.INSTANCE.register(new PlaceWebApi());
         WebApiRegistry.INSTANCE.register(new SummaryWebApi());
@@ -75,18 +79,22 @@ public class Schematica implements Module {
         WebApiRegistry.INSTANCE.register(new BlockStateWebApi());
     }
 
+    public SettingHandle<SchematicaConfig> getSettings() {
+        return settings;
+    }
+
     public boolean isEnabled() {
-        return getConfig().enabled;
+        return settings.get().enabled();
     }
 
     public boolean isBlockRenderingEnabled() {
-        SchematicaConfig config = getConfig();
-        return config.enabled && config.renderBlocks;
+        SchematicaConfig config = settings.get();
+        return config.enabled() && config.renderBlocks();
     }
 
     public List<EntrySummary> getSummary() {
         CompletableFuture<List<EntrySummary>> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             future.complete(entries.stream().map(Entry::asSummary).toList());
         });
         try {
@@ -117,10 +125,6 @@ public class Schematica implements Module {
         return info.getBlockState(x, y, z);
     }
 
-    public SectionInfo getSectionInfo(SectionPos pos) {
-        return lookup.get(pos.asLong());
-    }
-
     public boolean hasBlocksAtSection(int x, int y, int z) {
         return hasBlocksAtSection(SectionPos.asLong(x, y, z));
     }
@@ -147,26 +151,12 @@ public class Schematica implements Module {
         return SchematicaSectionCopy.from(states);
     }
 
-    public void onBlockRenderingStateChanged() {
-        ClientTickEndExecutor.instance.execute(() -> {
-            boolean renderBlocks = isBlockRenderingEnabled();
-            if (mc.level != null) {
-                for (SectionInfo info : lookup.values()) {
-                    mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
-                    if (renderBlocks) {
-                        mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
-                    }
-                }
-            }
-        });
-    }
-
     public void place(SchemaFile file, String name, PlacingSettings placing) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             final Entry entry = new Entry(file, name, placing);
             entries.add(entry);
 
-            AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+            AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();
             for (int i = 0; i < chunks.length(); i++) {
                 LevelChunk chunk = chunks.get(i);
                 if (chunk != null) {
@@ -198,7 +188,7 @@ public class Schematica implements Module {
     }
 
     public void remove(int index) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -237,7 +227,7 @@ public class Schematica implements Module {
     }
 
     public void clear() {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (mc.level != null) {
                 for (SectionInfo info : lookup.values()) {
                     mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
@@ -250,7 +240,7 @@ public class Schematica implements Module {
     }
 
     public void rescan(int index) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -278,7 +268,7 @@ public class Schematica implements Module {
     }
 
     public void move(int index, int x, int y, int z) {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (index < 0 || index >= entries.size()) {
                 return;
             }
@@ -350,7 +340,7 @@ public class Schematica implements Module {
 
     public DownloadInfo download(String format, int x1, int y1, int z1, int x2, int y2, int z2) {
         CompletableFuture<DownloadInfo> future = new CompletableFuture<>();
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (mc.level == null) {
                 future.complete(DownloadInfo.of("You have to join Minecraft world"));
                 return;
@@ -420,9 +410,33 @@ public class Schematica implements Module {
         }
     }
 
+    private void onConfigChanged(SchematicaConfig prev, SchematicaConfig curr) {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
+            boolean oldBlockRenderingState = prev.enabled() && prev.renderBlocks();
+            boolean newBlockRenderingState = curr.enabled() && curr.renderBlocks();
+            boolean oldShadeBlocksState = oldBlockRenderingState && prev.shadeBlocks();
+            boolean newShadeBlocksState = newBlockRenderingState && curr.shadeBlocks();
+            if (oldBlockRenderingState != newBlockRenderingState || oldShadeBlocksState != newShadeBlocksState) {
+                onBlockRenderingStateChanged();
+            }
+        });
+    }
+
+    public void onBlockRenderingStateChanged() {
+        boolean renderBlocks = isBlockRenderingEnabled();
+        if (mc.level != null) {
+            for (SectionInfo info : lookup.values()) {
+                mc.levelExtractor.setSectionDirty(info.x, info.y, info.z);
+                if (renderBlocks) {
+                    mc.level.getChunkSource().onSectionEmptinessChanged(info.x, info.y, info.z, false); // hasOnlyAir=false
+                }
+            }
+        }
+    }
+
     private void onAfterPlayerAiStep() {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
-        if (!config.enabled || !config.autoBuild) {
+        SchematicaConfig config = settings.get();
+        if (!config.enabled() || !config.autoBuild()) {
             resetState();
             return;
         }
@@ -432,7 +446,7 @@ public class Schematica implements Module {
             return;
         }
 
-        actionTickCounter += 1 / config.placementRate;
+        actionTickCounter += 1 / config.placementRate();
         if (applyFuture != null) {
             if (applyFuture.isDone()) {
                 applyFuture = null;
@@ -461,7 +475,7 @@ public class Schematica implements Module {
 
             BlockPlacePlan plan = null;
             BlockState state = null;
-            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange())) {
                 for (Entry entry : entries) {
                     state = entry.getBlockState(pos.getX(), pos.getY(), pos.getZ());
                     if (state.isAir()) {
@@ -498,8 +512,8 @@ public class Schematica implements Module {
     }
 
     private void onRender(RenderWorldLastEvent event) {
-        SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
-        if (!config.enabled) {
+        SchematicaConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -509,17 +523,17 @@ public class Schematica implements Module {
 
         Vec3 view = event.getCameraPos();
 
-        if (config.create.enabled) {
-            renderCreateBoundaries(event, view, config.create);
+        if (config.create().enabled()) {
+            renderCreateBoundaries(event, view, config.create());
         }
 
-        if (config.showMissingBlockTracers) {
-            TracerRenderer renderer = TracerRenderer.getInstance();
+        if (config.showMissingBlockTracers()) {
+            InstancedTracerRenderer renderer = InstancedTracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockTracersMaxDistance, pos -> {
+                entry.forEachMissing(view, config.missingBlockTracersMaxDistance(), pos -> {
                     renderer.tracer(
                             event.getCameraPos(),
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
@@ -530,13 +544,13 @@ public class Schematica implements Module {
             renderer.end(event.getMvp());
         }
 
-        if (config.showMissingBlockCubes) {
-            LineRenderer renderer = LineRenderer.getInstance();
+        if (config.showMissingBlockCubes()) {
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(0.2f, 1.0f, 0.2f, 0.8f);
             for (Entry entry : entries) {
-                entry.forEachMissing(view, config.missingBlockCubesMaxDistance, pos -> {
+                entry.forEachMissing(view, config.missingBlockCubesMaxDistance(), pos -> {
                     double x1 = pos.getX() + 0.25;
                     double y1 = pos.getY() + 0.25;
                     double z1 = pos.getZ() + 0.25;
@@ -550,13 +564,13 @@ public class Schematica implements Module {
             renderer.end(event.getMvp());
         }
 
-        if (config.showWrongBlockTracers) {
-            TracerRenderer renderer = TracerRenderer.getInstance();
+        if (config.showWrongBlockTracers()) {
+            InstancedTracerRenderer renderer = InstancedTracerRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
-                entry.forEachWrong(view, config.wrongBlockTracersMaxDistance, pos -> {
+                entry.forEachWrong(view, config.wrongBlockTracersMaxDistance(), pos -> {
                     renderer.tracer(
                             event.getCameraPos(),
                             pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
@@ -567,13 +581,13 @@ public class Schematica implements Module {
             renderer.end(event.getMvp());
         }
 
-        if (config.showWrongBlockCubes) {
-            LineRenderer renderer = LineRenderer.getInstance();
+        if (config.showWrongBlockCubes()) {
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             Color color = new Color(1.0f, 0.5f, 0.5f, 0.6f);
             for (Entry entry : entries) {
-                entry.forEachWrong(view, config.wrongBlockCubesMaxDistance, pos -> {
+                entry.forEachWrong(view, config.wrongBlockCubesMaxDistance(), pos -> {
                     double x1 = pos.getX() + 0.25;
                     double y1 = pos.getY() + 0.25;
                     double z1 = pos.getZ() + 0.25;
@@ -588,7 +602,7 @@ public class Schematica implements Module {
         }
     }
 
-    private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaConfig.Create create) {
+    private void renderCreateBoundaries(RenderWorldLastEvent event, Vec3 view, SchematicaWorldSlice create) {
         final double gap = 0.0625;
 
         Position3dColorRenderer quadRenderer = Position3dColorRenderer.getInstance();
@@ -603,7 +617,7 @@ public class Schematica implements Module {
                 new Color(0.00f, 0.58f, 1.00f, 0.2f).getRGB());
         quadRenderer.end(event.getMvp());
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
+        InstancedLineRenderer lineRenderer = InstancedLineRenderer.getInstance();
         lineRenderer.begin();
         lineRenderer.cuboid(
                 event.getCameraPos(),
@@ -638,10 +652,6 @@ public class Schematica implements Module {
         applyFuture = null;
     }
 
-    private SchematicaConfig getConfig() {
-        return ConfigStore.instance.getConfig().schematicaConfig;
-    }
-
     private static class Entry {
 
         private final String name;
@@ -673,7 +683,7 @@ public class Schematica implements Module {
                             int wy = y1 + pos.getY();
                             int wz = z1 + pos.getZ();
                             long chunkIndex = blockToChunkIndex(wx, wz);
-                            Chunk chunk = chunks.computeIfAbsent(chunkIndex, k -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
+                            Chunk chunk = chunks.computeIfAbsent(chunkIndex, _ -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
                         }
                     }
@@ -805,7 +815,7 @@ public class Schematica implements Module {
                             int wy = y + dy;
                             int wz = z + dz;
                             long chunkIndex = blockToChunkIndex(wx, wz);
-                            Chunk chunk = newChunks.computeIfAbsent(chunkIndex, k -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
+                            Chunk chunk = newChunks.computeIfAbsent(chunkIndex, _ -> new Chunk(wx & 0xFFFFFFF0, wz & 0xFFFFFFF0));
                             chunk.setBlockState(wx & 0x0F, wy, wz & 0x0F, state);
                         }
                     }
@@ -924,7 +934,7 @@ public class Schematica implements Module {
             missing.clear();
             wrong.clear();
 
-            SchematicaConfig config = ConfigStore.instance.getConfig().schematicaConfig;
+            SchematicaConfig config = Schematica.INSTANCE.settings.get();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
             for (int x = 0; x < 16; x++) {
                 int worldX = minX | x;
@@ -970,7 +980,7 @@ public class Schematica implements Module {
             if (isMissing(chunkState, finalState)) {
                 missing.add(pos.immutable());
             } else {
-                if (isWrong(chunkState, finalState, ConfigStore.instance.getConfig().schematicaConfig)) {
+                if (isWrong(chunkState, finalState, Schematica.INSTANCE.settings.get())) {
                     wrong.add(pos.immutable());
                 }
             }
@@ -985,9 +995,9 @@ public class Schematica implements Module {
         }
 
         private boolean isWrong(BlockState chunkState, BlockState finalState, SchematicaConfig config) {
-            if (config.airAlwaysValid && finalState.isAir()) {
+            if (config.airAlwaysValid() && finalState.isAir()) {
                 return false;
-            } else if (config.replaceableAsAir) {
+            } else if (config.replaceableAsAir()) {
                 return !chunkState.canBeReplaced() && chunkState != finalState;
             } else {
                 return !chunkState.isAir() && chunkState != finalState;

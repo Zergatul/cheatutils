@@ -11,6 +11,6 @@ public class ExplorationMiniMapApi {
     @MethodDescription("Adds a marker at the player's current position in the current dimension.")
     @ApiVisibility(ApiType.UPDATE)
     public void addMarker() {
-        ChunkOverlayController.instance.ofType(ExplorationMiniMapChunkOverlay.class).addMarker();
+        ChunkOverlayController.INSTANCE.ofType(ExplorationMiniMapChunkOverlay.class).addMarker();
     }
 }

@@ -1,11 +1,13 @@
 package com.zergatul.cheatutils.modules.esp.block;
 
 import com.zergatul.cheatutils.Constants;
-import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.concurrent.ClientThread;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.SettingNotificationReason;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BlockEspConfig;
+import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.esp.block.web.*;
 import com.zergatul.cheatutils.render.*;
@@ -18,7 +20,7 @@ import com.zergatul.cheatutils.scripting.modules.BlockEspEvent;
 import com.zergatul.cheatutils.scripting.types.BlockPosWrapper;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -30,24 +32,30 @@ import java.util.List;
 
 public class BlockEsp {
 
-    public static final BlockEsp instance = new BlockEsp();
+    public static final BlockEsp INSTANCE = new BlockEsp();
 
+    private final SettingHandle<BlockEspConfig> settings = Settings.get(BlockEspConfig.class);
     private final List<CustomBlockPosEntry> customEntries = new ArrayList<>();
     private final List<BlockPos> bbList = new ArrayList<>();
     private final List<BlockPos> tracerList = new ArrayList<>();
     private final List<BlockPos> overlayList = new ArrayList<>();
-    private final Map<BlockEspConfig, ScriptActivation<BlockEspConsumer>> scripts = new IdentityHashMap<>();
+    private final Map<Block, ScriptActivation<BlockEspConsumer>> scripts = new IdentityHashMap<>(); // client thread
+
     private boolean enabled = true;
 
     private BlockEsp() {
         Events.AfterRenderWorld.add(this::render);
+        settings.observe(this::onConfigChanged);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
-        WebApiRegistry.INSTANCE.register(new ConfigWebApi.Add());
         WebApiRegistry.INSTANCE.register(new RescanWebApi());
         WebApiRegistry.INSTANCE.register(new BlockInfoWebApi());
         WebApiRegistry.INSTANCE.register(new BlockModelWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
+    }
+
+    public SettingHandle<BlockEspConfig> getSettings() {
+        return settings;
     }
 
     public boolean isEnabled() {
@@ -71,26 +79,60 @@ public class BlockEsp {
         customEntries.removeIf(e -> e.pos.equals(pos));
     }
 
-    public void setScript(BlockEspConfig config, @Nullable BlockEspConsumer script) {
-        // Have to run from the main thread, since BlockEsp module doesn't snapshot scripts
-        // and if update happens mid-frame it can cause NullReference exception.
-        ClientTickEndExecutor.instance.execute(() -> {
-            ScriptActivation<BlockEspConsumer> previous = scripts.remove(config);
-            if (previous != null) {
-                previous.deactivate();
+    public void setScript(BlockGroupKey key, @Nullable BlockEspConsumer script) {
+        ClientThread.assertCurrent();
+
+        List<Block> blocks = key.getBlocks();
+        List<ScriptActivation<BlockEspConsumer>> previous = new ArrayList<>();
+        for (Block block : blocks) {
+            ScriptActivation<BlockEspConsumer> activation = scripts.remove(block);
+            if (activation != null && !previous.contains(activation)) {
+                previous.add(activation);
+                activation.deactivate();
             }
-            if (script != null) {
-                String identifier = BuiltInRegistries.BLOCK.getKey(config.blocks.stream().findFirst().orElseThrow()).toString();
-                scripts.put(config, new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, identifier), script));
+        }
+        if (script != null) {
+            ScriptActivation<BlockEspConsumer> activation = new ScriptActivation<>(new ScriptRef(ScriptType.BLOCK_ESP, key.toString()), script);
+            for (Block block : blocks) {
+                scripts.put(block, activation);
             }
-        });
+        }
     }
 
     public void clearScripts() {
-        ClientTickEndExecutor.instance.execute(() -> {
-            scripts.values().forEach(ScriptActivation::deactivate);
-            scripts.clear();
-        });
+        ClientThread.assertCurrent();
+
+        scripts.values().forEach(ScriptActivation::deactivate);
+        scripts.clear();
+    }
+
+    public void moveScript(BlockGroupKey oldKey, BlockGroupKey newKey) {
+        ClientThread.assertCurrent();
+
+        // all blocks should point to the same ScriptActivation instance
+        List<Block> oldBlocks = oldKey.getBlocks();
+        ScriptActivation<BlockEspConsumer> activation = scripts.get(oldBlocks.getFirst());
+        for (Block block : oldBlocks) {
+            scripts.remove(block);
+        }
+        if (activation != null) {
+            activation = activation.withRef(new ScriptRef(ScriptType.BLOCK_ESP, newKey.toString()));
+            for (Block block : newKey.getBlocks()) {
+                scripts.put(block, activation);
+            }
+        }
+    }
+
+    private void onConfigChanged(SettingNotificationReason reason, BlockEspConfig prev, BlockEspConfig curr) {
+        // Runs under the store lock, so calls are ordered. trackBlocks() only queues work for the block scanner.
+        Set<Block> blocks = new HashSet<>();
+        for (BlockEspEntry config : curr.entries()) {
+            for (Block block : config.blocks()) {
+                blocks.add(block);
+            }
+        }
+
+        BlockFinder.INSTANCE.trackBlocks(blocks);
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -108,8 +150,8 @@ public class BlockEsp {
     }
 
     private void renderConfiguredEntries(RenderWorldLastEvent event) {
-        ImmutableList<BlockEspConfig> configs = ConfigStore.instance.getConfig().blocks.getBlockConfigs();
-        if (configs.isEmpty()) {
+        BlockEspConfig currentConfig = settings.get();
+        if (currentConfig.entries().isEmpty()) {
             return;
         }
 
@@ -118,18 +160,13 @@ public class BlockEsp {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        InstancedTracerRenderer tracerRenderer = InstancedTracerRenderer.getInstance();
         tracerRenderer.begin();
-        EspCubeLineRender cubeRenderer = EspCubeLineRender.getInstance();
+        InstancedCubeLineRenderer cubeRenderer = InstancedCubeLineRenderer.getInstance();
         cubeRenderer.begin();
 
-        for (BlockEspConfig config : configs) {
-            if (!config.enabled) {
-                continue;
-            }
-
-            Set<BlockPos> set = BlockFinder.instance.blocks.get(config);
-            if (set == null || set.isEmpty()) {
+        for (BlockEspEntry config : currentConfig.entries()) {
+            if (!config.enabled()) {
                 continue;
             }
 
@@ -141,72 +178,82 @@ public class BlockEsp {
             tracerList.clear();
             overlayList.clear();
 
-            ScriptActivation<BlockEspConsumer> script = scripts.get(config);
-            if (config.scriptEnabled && script != null && script.isActive()) {
-                BlockScriptResult result = new BlockScriptResult();
-                BlockEspEvent blockEspEvent = new BlockEspEvent(result);
-                for (BlockPos pos : set) {
-                    double dx = pos.getX() - playerX;
-                    double dy = pos.getY() - playerY;
-                    double dz = pos.getZ() - playerZ;
-                    double distanceSqr = dx * dx + dy * dy + dz * dz;
-
-                    if (distanceSqr >= boundingBoxMaxDistanceSqr && distanceSqr >= tracerMaxDistanceSqr && distanceSqr >= overlayMaxDistanceSqr) {
+            for (Block block : config.blocks()) {
+                ScriptActivation<BlockEspConsumer> script = scripts.get(block);
+                if (config.scriptEnabled() && script != null && script.isActive()) {
+                    BlockScriptResult result = new BlockScriptResult();
+                    BlockEspEvent blockEspEvent = new BlockEspEvent(result);
+                    Set<BlockPos> positions = BlockFinder.INSTANCE.getPositons(block);
+                    if (positions == null) {
                         continue;
                     }
+                    for (BlockPos pos : positions) {
+                        double dx = pos.getX() - playerX;
+                        double dy = pos.getY() - playerY;
+                        double dz = pos.getZ() - playerZ;
+                        double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                    result.reset();
-                    if (!script.run("block rendering", () -> script.program.accept(new BlockPosWrapper(pos), blockEspEvent))) {
-                        // Discard partial scripted output; normal configured visuals resume next frame.
-                        bbList.clear();
-                        tracerList.clear();
-                        overlayList.clear();
-                        break;
+                        if (distanceSqr >= boundingBoxMaxDistanceSqr && distanceSqr >= tracerMaxDistanceSqr && distanceSqr >= overlayMaxDistanceSqr) {
+                            continue;
+                        }
+
+                        result.reset();
+                        if (!script.run("block rendering", () -> script.program.accept(new BlockPosWrapper(pos), blockEspEvent))) {
+                            // Discard partial scripted output; normal configured visuals resume next frame.
+                            bbList.clear();
+                            tracerList.clear();
+                            overlayList.clear();
+                            break;
+                        }
+
+                        if (distanceSqr < boundingBoxMaxDistanceSqr && result.shouldDrawOutline(config.drawBoundingBox())) {
+                            bbList.add(pos);
+                        }
+
+                        if (distanceSqr < tracerMaxDistanceSqr && result.shouldDrawTracer(config.drawTracers())) {
+                            tracerList.add(pos);
+                        }
+
+                        if (distanceSqr < overlayMaxDistanceSqr && result.shouldDrawOverlay(config.drawOverlay())) {
+                            overlayList.add(pos);
+                        }
                     }
-
-                    if (distanceSqr < boundingBoxMaxDistanceSqr && result.shouldDrawOutline(config.drawBoundingBox)) {
-                        bbList.add(pos);
+                } else {
+                    Set<BlockPos> positions = BlockFinder.INSTANCE.getPositons(block);
+                    if (positions == null) {
+                        continue;
                     }
+                    for (BlockPos pos : positions) {
+                        double dx = pos.getX() - playerX;
+                        double dy = pos.getY() - playerY;
+                        double dz = pos.getZ() - playerZ;
+                        double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-                    if (distanceSqr < tracerMaxDistanceSqr && result.shouldDrawTracer(config.drawTracers)) {
-                        tracerList.add(pos);
-                    }
+                        if (config.drawBoundingBox() && distanceSqr < boundingBoxMaxDistanceSqr) {
+                            bbList.add(pos);
+                        }
 
-                    if (distanceSqr < overlayMaxDistanceSqr && result.shouldDrawOverlay(config.drawOverlay)) {
-                        overlayList.add(pos);
-                    }
-                }
-            } else {
-                for (BlockPos pos : set) {
-                    double dx = pos.getX() - playerX;
-                    double dy = pos.getY() - playerY;
-                    double dz = pos.getZ() - playerZ;
-                    double distanceSqr = dx * dx + dy * dy + dz * dz;
+                        if (config.drawTracers() && distanceSqr < tracerMaxDistanceSqr) {
+                            tracerList.add(pos);
+                        }
 
-                    if (config.drawBoundingBox && distanceSqr < boundingBoxMaxDistanceSqr) {
-                        bbList.add(pos);
-                    }
-
-                    if (config.drawTracers && distanceSqr < tracerMaxDistanceSqr) {
-                        tracerList.add(pos);
-                    }
-
-                    if (config.drawOverlay && distanceSqr < overlayMaxDistanceSqr) {
-                        overlayList.add(pos);
+                        if (config.drawOverlay() && distanceSqr < overlayMaxDistanceSqr) {
+                            overlayList.add(pos);
+                        }
                     }
                 }
             }
 
             if (!bbList.isEmpty()) {
-                renderBoundingBoxes(cubeRenderer, (float) config.boundingBoxWidth, config.boundingBoxColor.getRGB(), event);
+                renderBoundingBoxes(cubeRenderer, (float) config.boundingBoxWidth(), config.boundingBoxColor().getRGB(), event);
             }
 
             if (!tracerList.isEmpty()) {
-                renderTracers(tracerRenderer, (float) config.tracerWidth, config.tracerColor.getRGB(), event);
+                renderTracers(tracerRenderer, (float) config.tracerWidth(), config.tracerColor().getRGB(), event);
             }
 
             if (!overlayList.isEmpty()) {
-                renderOverlay(config.overlayColor, event);
+                renderOverlay(config.overlayColor(), event);
             }
         }
 
@@ -214,7 +261,7 @@ public class BlockEsp {
         cubeRenderer.end(event.getMvp());
     }
 
-    private void renderBoundingBoxes(EspCubeLineRender renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderBoundingBoxes(InstancedCubeLineRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -233,7 +280,7 @@ public class BlockEsp {
         }
     }
 
-    private void renderTracers(TracerRenderer renderer, float width, int color, RenderWorldLastEvent event) {
+    private void renderTracers(InstancedTracerRenderer renderer, float width, int color, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;

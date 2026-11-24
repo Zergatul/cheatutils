@@ -2,19 +2,20 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.AreaMineConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AreaMineConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.ClientLevelAccessor;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,19 +24,26 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class AreaMine implements Module {
 
-    public static final AreaMine instance = new AreaMine();
+    public static final AreaMine INSTANCE = new AreaMine();
 
+    private final SettingHandle<AreaMineConfig> settings = Settings.get(AreaMineConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AreaMine() {
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.BeforeInstaMine.add(this::onBeforeInstaMine);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("area-mine", settings, AreaMineConfig.class);
+    }
+
+    public SettingHandle<AreaMineConfig> getSettings() {
+        return settings;
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
@@ -43,8 +51,8 @@ public class AreaMine implements Module {
             return;
         }
 
-        AreaMineConfig config = ConfigStore.instance.getConfig().areaMineConfig;
-        if (!config.enabled || !config.preview) {
+        AreaMineConfig config = settings.get();
+        if (!config.enabled() || !config.preview()) {
             return;
         }
 
@@ -69,7 +77,7 @@ public class AreaMine implements Module {
             return;
         }
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
 
         int time = (int) (System.currentTimeMillis() % 2000);
@@ -91,8 +99,8 @@ public class AreaMine implements Module {
     }
 
     private void onBeforeInstaMine(BlockPos origin) {
-        AreaMineConfig config = ConfigStore.instance.getConfig().areaMineConfig;
-        if (!config.enabled) {
+        AreaMineConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -100,6 +108,7 @@ public class AreaMine implements Module {
             return;
         }
 
+        List<Packet<?>> packets = new ArrayList<>();
         forEachInstaminable(mc.player.getPosition(1f), origin, config, pos -> {
             if (pos.equals(origin)) {
                 return;
@@ -110,21 +119,23 @@ public class AreaMine implements Module {
             // we call startPredicting inside another startPredicting which is not ok
             // but original close() method should be called and fix it
 
-            ServerboundPlayerActionPacket packet = new ServerboundPlayerActionPacket(
+            packets.add(new ServerboundPlayerActionPacket(
                     ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
                     pos,
                     Direction.UP,
-                    handler.currentSequence());
-
-            NetworkPacketsController.instance.sendPacket(packet);
+                    handler.currentSequence()));
         });
+
+        if (!packets.isEmpty()) {
+            PacketUtils.send(mc.player, packets);
+        }
     }
 
     private void forEachInstaminable(Vec3 playerPos, BlockPos origin, AreaMineConfig config, Consumer<BlockPos> consumer) {
         double pick2 = mc.player.blockInteractionRange();
         pick2 = pick2 * pick2;
-        int delta = (int) Math.floor(config.radius);
-        int r2 = (int) Math.floor(config.radius * config.radius);
+        int delta = (int) Math.floor(config.radius());
+        int r2 = (int) Math.floor(config.radius() * config.radius());
         for (int x = -delta; x <= delta; x++) {
             for (int y = -delta; y <= delta; y++) {
                 for (int z = -delta; z <= delta; z++) {
@@ -146,23 +157,6 @@ public class AreaMine implements Module {
                     }
                 }
             }
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AreaMineConfig> {
-
-        public WebApi() {
-            super("area-mine", AreaMineConfig.class);
-        }
-
-        @Override
-        protected AreaMineConfig getConfig() {
-            return ConfigStore.instance.getConfig().areaMineConfig;
-        }
-
-        @Override
-        protected void setConfig(AreaMineConfig config) {
-            ConfigStore.instance.getConfig().areaMineConfig = config;
         }
     }
 }

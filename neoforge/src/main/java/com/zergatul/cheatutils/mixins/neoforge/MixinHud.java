@@ -42,7 +42,7 @@ public abstract class MixinHud {
             return;
         }
 
-        if (ConfigStore.instance.getConfig().armorOverlayConfig.enabled) {
+        if (ArmorOverlay.INSTANCE.getSettings().get().enabled()) {
             int j1 = graphics.guiHeight() - 39;
             int j2 = j1 - 10;
 
@@ -61,11 +61,11 @@ public abstract class MixinHud {
                 j2 -= 10;
             }
 
-            ArmorOverlay.instance.render(graphics, player, graphics.guiWidth() / 2 + 28, j2 - 6);
+            ArmorOverlay.INSTANCE.render(graphics, player, graphics.guiWidth() / 2 + 28, j2 - 6);
         }
 
-        if (ConfigStore.instance.getConfig().statusEffectsConfig.enabled) {
-            BetterStatusEffects.instance.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
+        if (BetterStatusEffects.INSTANCE.getSettings().get().enabled()) {
+            BetterStatusEffects.INSTANCE.render(graphics, player, graphics.guiHeight() - 50 - 2 * this.minecraft.font.lineHeight - 25);
         }
     }
 }

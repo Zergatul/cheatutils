@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.modules.utilities;
 
 import com.google.gson.*;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
+import com.zergatul.cheatutils.concurrent.ClientThread;
 import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.configs.ConfigWriterQueue;
 import com.zergatul.cheatutils.modules.Module;
@@ -15,14 +14,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Profiles implements Module {
 
-    public static final Profiles instance = new Profiles();
+    public static final Profiles INSTANCE = new Profiles();
 
-    private static final long WRITE_FILE_DELAY = 15 * 1_000_000_000L;
     private static final String OLD_CONFIG_FILE_NAME = "zergatulcheatutils.json";
     private static final String PROFILE_CONFIG_FILE_NAME = "cheatutils-profile.json";
     private static final String DEFAULT_CONFIG_FILE_NAME = "cheatutils.json";
@@ -31,8 +30,7 @@ public class Profiles implements Module {
     private final Logger logger = LogManager.getLogger(Profiles.class);
     private final char[] invalidChars = new char[] { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
     private final Pattern pattern = Pattern.compile("^cheatutils\\.(.+)\\.json$");
-    private String current;
-    private volatile boolean isInResetState = false;
+    private volatile String current; // changed on the client thread
 
     private Profiles() {
         WebApiRegistry.INSTANCE.register(new WebApi());
@@ -46,8 +44,7 @@ public class Profiles implements Module {
         File profileConfigFile = getProfileConfigFile();
         if (profileConfigFile.exists()) {
             Gson gson = new GsonBuilder().create();
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(profileConfigFile));
+            try (FileReader reader = new FileReader(profileConfigFile)) {
                 ProfileConfig config = gson.fromJson(reader, ProfileConfig.class);
                 if (isValidProfileName(config.name)) {
                     current = config.name;
@@ -63,7 +60,7 @@ public class Profiles implements Module {
             profileFile = getProfileFile(current);
         }
 
-        ConfigStore.instance.read(profileFile);
+        ConfigStore.INSTANCE.loadInitial(profileFile);
     }
 
     public String getCurrent() {
@@ -116,43 +113,46 @@ public class Profiles implements Module {
         return valid;
     }
 
-    public void createNew(String name) {
+    public CompletableFuture<Void> createNew(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.instance.createNew(getProfileFile(name)));
+        return runProfileOperation(() -> {
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.createNew(getProfileFile(name));
+            saveCreatedProfile(name);
+        });
     }
 
-    public void createCopy(String name) {
+    public CompletableFuture<Void> createCopy(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.instance.switchFile(getProfileFile(name)));
+        return runProfileOperation(() -> {
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.switchFile(getProfileFile(name));
+            saveCreatedProfile(name);
+        });
     }
 
-    public void change(String name) {
+    public CompletableFuture<Void> change(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
 
-        // if we have pending write, execute it right now
-        ConfigWriterQueue.instance.flush(getProfileFile(current));
-
-        current = name;
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile(name)));
+        return runProfileOperation(() -> {
+            // the pending write of the previous profile keeps its own file and deadline
+            current = name;
+            requestWrite();
+            ConfigStore.INSTANCE.load(getProfileFile(name));
+        });
     }
 
-    public void delete(String name) {
+    public CompletableFuture<Void> delete(String name) {
         if (!isValidProfileName(name)) {
             throw new IllegalStateException("Profile name is not valid.");
         }
@@ -161,26 +161,22 @@ public class Profiles implements Module {
             throw new IllegalStateException("Cannot delete default profile.");
         }
 
-        File file = getProfileFile(name);
-        if (file.exists()) {
-            if (!file.delete()) {
-                logger.error("Cannot delete profile file.");
+        return runProfileOperation(() -> {
+            current = "";
+            requestWrite();
+            ConfigStore.INSTANCE.load(getProfileFile(""));
+
+            // after the switch: no new write can target the deleted file, and its pending write is dropped
+            File file = getProfileFile(name);
+            if (!ConfigWriterQueue.INSTANCE.delete(file)) {
+                logger.error("Cannot delete profile file {}", file.getName());
             }
-        }
-
-        current = "";
-        requestWrite();
-
-        executeInRenderThread(() -> ConfigStore.instance.read(getProfileFile("")));
-    }
-
-    public boolean isInResetState() {
-        return isInResetState;
+        });
     }
 
     public String[] reset() {
-        isInResetState = true;
-        ConfigWriterQueue.instance.clear();
+        // nothing is saved after this, so deleted files stay deleted
+        ConfigWriterQueue.INSTANCE.disable();
 
         // remove files
         String[] files = getConfigDirectory().list();
@@ -220,24 +216,32 @@ public class Profiles implements Module {
         return errors.toArray(String[]::new);
     }
 
-    private void executeInRenderThread(Runnable runnable) {
-        if (RenderSystem.isOnRenderThread()) {
-            runnable.run();
-        } else {
-            ClientTickEndExecutor.instance.execute(runnable);
-        }
+    /**
+     * A profile operation replaces every script runtime, so it runs as one step on the client thread at the end of
+     * the tick: never inline from inside a script callback. Callers never wait here.
+     * Web requests wait on the returned future.
+     */
+    private CompletableFuture<Void> runProfileOperation(Runnable operation) {
+        return ClientThread.post(operation);
+    }
+
+    /**
+     * A profile exists only as its file: {@link #list()} and {@link #change} look on disk. So a new profile is
+     * written right away instead of after the usual delay, or it would be missing from the list once the user
+     * switches away before the delayed write. Later edits are saved with the usual delay.
+     */
+    private void saveCreatedProfile(String name) {
+        ConfigWriterQueue.INSTANCE.flush(getProfileFile(name));
     }
 
     private void requestWrite() {
         String current = this.current;
         File file = getProfileConfigFile();
-        ConfigWriterQueue.instance.queue(file, WRITE_FILE_DELAY, () -> {
+        ConfigWriterQueue.INSTANCE.queue(file, () -> {
             logger.debug("Saving profile config file {}", file.getName());
             try {
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-                new GsonBuilder().create().toJson(new ProfileConfig(current), writer);
-                writer.close();
-            } catch (Throwable e) {
+                ConfigWriterQueue.writeAtomically(file, new GsonBuilder().create().toJson(new ProfileConfig(current)));
+            } catch (IOException | RuntimeException e) {
                 logger.error("Cannot write profile config", e);
             }
         });
@@ -274,7 +278,7 @@ public class Profiles implements Module {
         }
     }
 
-    public record ProfileConfig(String name) {}
+    private record ProfileConfig(String name) {}
 
     private final class WebApi extends WebApiBase {
 
@@ -284,7 +288,7 @@ public class Profiles implements Module {
         }
 
         @Override
-        public String get(String command) throws ApiException {
+        public String get(String command) {
             return switch (command) {
                 case "current" -> gson.toJson(Profiles.this.getCurrent());
                 case "list" -> gson.toJson(Profiles.this.list());
@@ -293,21 +297,23 @@ public class Profiles implements Module {
         }
 
         @Override
-        public String post(String body) throws ApiException {
+        public String post(String body) {
             Request request = gson.fromJson(body, Request.class);
-            switch (request.command) {
-                case "change": Profiles.this.change(request.name); break;
-                case "copy": Profiles.this.createCopy(request.name); break;
-                case "new": Profiles.this.createNew(request.name); break;
-                default: throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
-            }
+            CompletableFuture<Void> operation = switch (request.command) {
+                case "change" -> Profiles.this.change(request.name);
+                case "copy" -> Profiles.this.createCopy(request.name);
+                case "new" -> Profiles.this.createNew(request.name);
+                default -> throw new ApiException("Unsupported command.", HttpResponseCodes.BAD_REQUEST);
+            };
 
+            // reply when the new profile is active, so the page reloads its settings
+            ClientThread.await(operation);
             return "{}";
         }
 
         @Override
         public String delete(String name) {
-            Profiles.this.delete(name);
+            ClientThread.await(Profiles.this.delete(name));
             return "{}";
         }
 

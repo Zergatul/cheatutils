@@ -1,24 +1,34 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FakeLag implements Module {
 
-    public static final FakeLag instance = new FakeLag();
+    public static final FakeLag INSTANCE = new FakeLag();
 
-    private volatile boolean enabled;
-    private final List<Packet<?>> clientPackets = Collections.synchronizedList(new ArrayList<>());
-    private final List<Packet<?>> serverPackets = Collections.synchronizedList(new ArrayList<>());
+    private final List<PacketUtils.CapturedClientPacket> clientPackets = new ArrayList<>();
+    private final List<PacketUtils.CapturedServerPacket> serverPackets = new ArrayList<>();
+    private boolean enabled;
 
     private FakeLag() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        // we want to capture packets before any other handler processes them
+        // these handlers will have a chance to process these packets later
+        // when we re-send/re-receive them
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket, -1000);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket, -1000);
+        Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
+
+        // TODO: discover idea to have config switch:
+        // - skip all packets by using BeforeSendPacketNettyThread
+        // - skip only essential packets that goes through BeforeSendPacketClientThread (current)
     }
 
     public boolean isEnabled() {
@@ -28,26 +38,44 @@ public class FakeLag implements Module {
     public void toggle() {
         if (enabled) {
             enabled = false;
-            clientPackets.forEach(NetworkPacketsController.instance::sendPacket);
-            serverPackets.forEach(NetworkPacketsController.instance::receivePacket);
+            List<PacketUtils.CapturedClientPacket> clientPackets = List.copyOf(this.clientPackets);
+            List<PacketUtils.CapturedServerPacket> serverPackets = List.copyOf(this.serverPackets);
+            this.clientPackets.clear();
+            this.serverPackets.clear();
+
+            PacketUtils.send(clientPackets);
+            PacketUtils.receive(serverPackets);
         } else {
             enabled = true;
-        }
-        clientPackets.clear();
-        serverPackets.clear();
-    }
-
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (enabled) {
-            clientPackets.add(args.packet);
-            args.skip = true;
+            clientPackets.clear();
+            serverPackets.clear();
         }
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (enabled) {
-            serverPackets.add(args.packet);
-            args.skip = true;
+            clientPackets.add(new PacketUtils.CapturedClientPacket(connection, packet));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
+        if (enabled) {
+            serverPackets.add(new PacketUtils.CapturedServerPacket(listener, packet));
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void onLoggingOut() {
+        if (enabled) {
+            enabled = false;
+            // connection is already closed, no point to replay packets
+            clientPackets.clear();
+            serverPackets.clear();
         }
     }
 }

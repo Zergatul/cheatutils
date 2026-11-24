@@ -51,7 +51,6 @@
     "common.MixinClientboundDisconnectPacket",
     "common.MixinClientboundPlayerInfoRemovePacket",
     "common.MixinClientboundPlayerInfoUpdatePacket",
-    "common.MixinClientHandshakePacketListenerImpl",
     "common.MixinClientLevel",
     "common.MixinClientPacketListener",
     "common.MixinClientCommonPacketListenerImpl",
@@ -84,12 +83,14 @@
     "common.MixinMultiPlayerGameMode",
     "common.MixinOptions",
     "common.MixinPackConfirmScreen",
+    "common.MixinPacketProcessorHandle",
     "common.MixinPig",
     "common.MixinProjectileUtil",
     "common.MixinScreen",
     "common.MixinServerboundMovePlayerPacket",
     "common.MixinSoundBufferLibrary",
     "common.MixinSoundManager",
+    "common.MixinTridentItem",
     "common.MixinUser"
   ]
 }

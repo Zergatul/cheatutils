@@ -2,8 +2,8 @@ package com.zergatul.cheatutils.modules.scripting;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.SendChatEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ExecConfig;
+import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.ExecConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.AsyncRunnable;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
@@ -12,10 +12,9 @@ import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
 import com.zergatul.cheatutils.scripting.ScriptType;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import com.zergatul.scripting.DiagnosticMessage;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -24,16 +23,22 @@ import java.util.Objects;
 
 public class Exec implements Module {
 
-    public static final Exec instance = new Exec();
+    public static final Exec INSTANCE = new Exec();
+
+    private final SettingHandle<ExecConfig> settings = Settings.get(ExecConfig.class);
 
     private Exec() {
         Events.SendChat.add(this::onSendChat);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("exec", settings, ExecConfig.class);
+    }
+
+    public SettingHandle<ExecConfig> getSettings() {
+        return settings;
     }
 
     private void onSendChat(SendChatEvent event) {
-        if (!ConfigStore.instance.getConfig().execConfig.enabled) {
+        if (!settings.get().enabled()) {
             return;
         }
 
@@ -44,8 +49,8 @@ public class Exec implements Module {
         event.cancel();
 
         String code = event.getMessage().substring(1);
-        CompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
-        if (result.getProgram() == null) {
+        ClassCompilationResult result = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.KEYBINDING, code);
+        if (!result.isSuccess()) {
             for (DiagnosticMessage message : Objects.requireNonNull(result.getDiagnostics())) {
                 systemMessage(message.message, 0xFFFF8080);
             }
@@ -53,10 +58,10 @@ public class Exec implements Module {
         }
 
         try {
-            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), result.getProgram());
-            ScriptExecutionManager.instance.execute(() -> activation.execute(activation.program));
+            ScriptActivation<AsyncRunnable> activation = new ScriptActivation<>(new ScriptRef(ScriptType.EXEC_CODE), ScriptCompilerRegistry.instantiate(result));
+            ScriptExecutionManager.INSTANCE.execute(() -> activation.execute(activation.program));
         } catch (Throwable e) {
-            ScriptRuntimeFailureHandler.instance.reportSynchronous("Exec script failed.", e);
+            ScriptRuntimeFailureHandler.INSTANCE.reportSynchronous("Exec script failed.", e);
             return;
         }
 
@@ -65,22 +70,5 @@ public class Exec implements Module {
 
     private void systemMessage(String message, int color) {
         Minecraft.getInstance().gui.chatListener().handleSystemMessage(Component.literal(message).withStyle(Style.EMPTY.withColor(color)), false);
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ExecConfig> {
-
-        public WebApi() {
-            super("exec", ExecConfig.class);
-        }
-
-        @Override
-        protected ExecConfig getConfig() {
-            return ConfigStore.instance.getConfig().execConfig;
-        }
-
-        @Override
-        protected void setConfig(ExecConfig config) {
-            ConfigStore.instance.getConfig().execConfig = config;
-        }
     }
 }

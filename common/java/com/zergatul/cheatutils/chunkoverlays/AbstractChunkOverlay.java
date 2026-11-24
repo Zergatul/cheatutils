@@ -35,9 +35,9 @@ public abstract class AbstractChunkOverlay {
     }
 
     public final void onEnabledChanged() {
-        ClientTickEndExecutor.instance.execute(() -> {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
             if (isEnabled()) {
-                AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+                AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();
                 for (int i = 0; i < chunks.length(); i++) {
                     LevelChunk chunk = chunks.get(i);
                     if (chunk == null) {

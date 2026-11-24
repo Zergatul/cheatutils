@@ -27,24 +27,24 @@ public class BlockBreaker {
                     future.complete(null);
                 } else {
                     if (config.shouldAutoRotate()) {
-                        FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
+                        FakeRotation.INSTANCE.setServerRotation(Vec3.atCenterOf(pos));
                     }
-                    AfterSendPlayerPosExecutor.instance.execute(() -> {
+                    AfterSendPlayerPosExecutor.INSTANCE.execute(() -> {
                         assert mc.player != null;
                         assert mc.gameMode != null;
 
-                        AutoTool.instance.enterSkipMode();
+                        AutoTool.INSTANCE.enterSkipMode();
                         mc.gameMode.startDestroyBlock(pos, Direction.UP);
-                        AutoTool.instance.exitSkipMode();
+                        AutoTool.INSTANCE.exitSkipMode();
 
                         boolean instamined = !mc.gameMode.isDestroying();
 
                         // if we call continueDestroyBlock after we block is destroyed
                         // it can trigger destroying next block we don't want to touch
                         if (!instamined) {
-                            AutoTool.instance.enterSkipMode();
+                            AutoTool.INSTANCE.enterSkipMode();
                             mc.gameMode.continueDestroyBlock(pos, Direction.UP);
-                            AutoTool.instance.exitSkipMode();
+                            AutoTool.INSTANCE.exitSkipMode();
                         }
                         mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), true);
                         if (instamined) {
@@ -60,18 +60,18 @@ public class BlockBreaker {
     }
 
     private static void queueCheckBreakingProgress(BlockPos pos, InteractionConfig config, CompletableFuture<Void> future) {
-        InGameTickEndExecutor.instance.waitTicks(0).whenComplete((unused, exception) -> {
+        InGameTickEndExecutor.INSTANCE.waitTicks(0).whenComplete((unused, exception) -> {
             if (exception != null) {
                 future.completeExceptionally(exception);
                 return;
             }
 
             if (config.shouldAutoRotate()) {
-                AfterPlayerAiStepExecutor.instance.execute(() -> {
-                    FakeRotation.instance.setServerRotation(Vec3.atCenterOf(pos));
+                AfterPlayerAiStepExecutor.INSTANCE.execute(() -> {
+                    FakeRotation.INSTANCE.setServerRotation(Vec3.atCenterOf(pos));
                 });
             }
-            AfterSendPlayerPosExecutor.instance.execute(() -> {
+            AfterSendPlayerPosExecutor.INSTANCE.execute(() -> {
                 checkBreakingProgress(pos, config, future);
             });
         });
@@ -88,9 +88,9 @@ public class BlockBreaker {
             } else {
                 // check distance to block
                 if (isInRange(pos, config)) {
-                    AutoTool.instance.enterSkipMode();
+                    AutoTool.INSTANCE.enterSkipMode();
                     boolean continuing = mc.gameMode.continueDestroyBlock(pos, Direction.UP);
-                    AutoTool.instance.exitSkipMode();
+                    AutoTool.INSTANCE.exitSkipMode();
                     if (continuing) {
                         mc.player.swing(InteractionHand.MAIN_HAND, mc.player.getItemInHand(InteractionHand.MAIN_HAND).getAttackAnimation(), false);
                         queueCheckBreakingProgress(pos, config, future);

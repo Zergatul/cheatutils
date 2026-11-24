@@ -3,7 +3,9 @@
         Emulates network lag.
         Once you enable this module all packets (server -> client and client -> server) are rejected and stored in buffer.
         As soon as you disable module all packets from buffer are processed. Your minecraft client receieves all skipped packets from server,
-        and server receieves all packets from client with almost no delay between packets.
+        and server receieves all packets from client with almost no delay between packets.<br>
+        Some system packets like login handshake packets, keep-alive packets (both directions), ClientboundChunkBatchFinishedPacket, may still go through,
+        but essential game packets are completely stopped.
     </div>
 
     <div class="module-sections">

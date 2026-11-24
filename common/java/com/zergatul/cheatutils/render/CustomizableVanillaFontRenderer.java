@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class CustomizableVanillaFontRenderer {
 
-    public static final CustomizableVanillaFontRenderer instance = new CustomizableVanillaFontRenderer();
+    public static final CustomizableVanillaFontRenderer INSTANCE = new CustomizableVanillaFontRenderer();
 
     protected static final float SHADOW_FACTOR = 0.25f;
 

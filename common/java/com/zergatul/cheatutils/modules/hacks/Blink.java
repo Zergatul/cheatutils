@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.entities.FakePlayer;
 import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -12,10 +13,11 @@ import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Blink implements Module {
 
-    public static final Blink instance = new Blink();
+    public static final Blink INSTANCE = new Blink();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Packet<?>> packets = new ArrayList<>();
@@ -25,7 +27,8 @@ public class Blink implements Module {
     private FakePlayer fake;
 
     private Blink() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        // we want to capture movement/tick packets after every other handler, including user handlers
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket, 3000);
         Events.ClientPlayerLoggingOut.add(this::disable);
         Events.DimensionChange.add(this::disable);
     }
@@ -39,12 +42,13 @@ public class Blink implements Module {
             return;
         }
 
-        NetworkPacketsController.instance.stopHandlers();
-        packets.forEach(NetworkPacketsController.instance::sendBufferedPacket);
-        packets.clear();
-        NetworkPacketsController.instance.resumeHandlers();
-
         isEnabled = false;
+
+        // packets were already processed by all handlers
+        // no need to process them again
+        PacketUtils.sendWithBypass(Objects.requireNonNull(mc.player), packets);
+        packets.clear();
+
         fake.remove(Entity.RemovalReason.DISCARDED);
     }
 
@@ -107,18 +111,16 @@ public class Blink implements Module {
         }
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
         if (!isEnabled) {
-            return;
+            return true;
         }
 
-        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
-            args.skip = true;
+        if (packet instanceof ServerboundMovePlayerPacket || packet instanceof ServerboundClientTickEndPacket) {
             packets.add(packet);
+            return false;
         }
-        if (args.packet instanceof ServerboundClientTickEndPacket packet) {
-            args.skip = true;
-            packets.add(packet);
-        }
+
+        return true;
     }
 }

@@ -4,12 +4,12 @@ import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateEvent;
 import com.zergatul.cheatutils.common.events.PlayerInfoUpdateType;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.LogoutSpotsConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.LogoutSpotsConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.RemotePlayer;
@@ -24,8 +24,9 @@ import java.util.List;
 
 public class LogoutSpots implements Module {
 
-    public static final LogoutSpots instance = new LogoutSpots();
+    public static final LogoutSpots INSTANCE = new LogoutSpots();
 
+    private final SettingHandle<LogoutSpotsConfig> settings = Settings.get(LogoutSpotsConfig.class);
     private static final int TICKS_WINDOW = 5;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -40,13 +41,17 @@ public class LogoutSpots implements Module {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld); // move before other ESPs?
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("logout-spots", settings, LogoutSpotsConfig.class);
+    }
+
+    public SettingHandle<LogoutSpotsConfig> getSettings() {
+        return settings;
     }
 
     public List<EntityLike> getDisconnectedPlayers() {
         assert mc.level != null;
 
-        if (!getConfig().enabled) {
+        if (!getConfig().enabled()) {
             return List.of();
         }
         if (entries.isEmpty()) {
@@ -116,11 +121,11 @@ public class LogoutSpots implements Module {
     private void onAfterRenderWorld(RenderWorldLastEvent event) {
         assert mc.level != null;
 
-        if (!getConfig().enabled || entries.isEmpty()) {
+        if (!getConfig().enabled() || entries.isEmpty()) {
             return;
         }
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
         for (LogoutSpotEntry entry : entries) {
             if (entry.dimension.equals(mc.level.dimension().identifier())) {
@@ -140,7 +145,7 @@ public class LogoutSpots implements Module {
     }
 
     private LogoutSpotsConfig getConfig() {
-        return ConfigStore.instance.getConfig().logoutSpots;
+        return settings.get();
     }
 
     private static class CachedPlayerEntry {
@@ -174,23 +179,6 @@ public class LogoutSpots implements Module {
             width = player.getBbWidth();
             height = player.getBbHeight();
             entity = EntityLike.asDisconnectedPlayer(player);
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<LogoutSpotsConfig> {
-
-        public WebApi() {
-            super("logout-spots", LogoutSpotsConfig.class);
-        }
-
-        @Override
-        protected LogoutSpotsConfig getConfig() {
-            return ConfigStore.instance.getConfig().logoutSpots;
-        }
-
-        @Override
-        protected void setConfig(LogoutSpotsConfig config) {
-            ConfigStore.instance.getConfig().logoutSpots = config;
         }
     }
 }

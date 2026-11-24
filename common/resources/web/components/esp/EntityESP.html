@@ -6,21 +6,21 @@
             </div>
             <div class="entity-list">
                 <table>
-                    <tr v-for="item in entitiesConfigList" :key="item.clazz">
+                    <tr v-for="item in entitiesConfigList" :key="item.type">
                         <td>
-                            <div class="entity-info-header" :class="{ 'entity-info-interface': entitiesMap[item.clazz].isInterface }">
-                                <div class="entity-info-classname">{{ entitiesMap[item.clazz].simpleName }}</div>
-                                <div class="smaller entity-info-id" v-if="entitiesMap[item.clazz].id">{{ entitiesMap[item.clazz].id }}</div>
+                            <div class="entity-info-header" :class="{ 'entity-info-interface': entitiesMap[item.type].isInterface }">
+                                <div class="entity-info-classname">{{ entitiesMap[item.type].simpleName }}</div>
+                                <div class="smaller entity-info-id" v-if="entitiesMap[item.type].id">{{ entitiesMap[item.type].id }}</div>
                             </div>
-                            <div class="entity-info-hierarchy smaller" v-if="!entitiesMap[item.clazz].isInterface">
-                                <span v-for="clazz in entitiesMap[item.clazz].baseClasses">
-                                    🠞 {{ entitiesMap[clazz].simpleName }}
+                            <div class="entity-info-hierarchy smaller" v-if="!entitiesMap[item.type].isInterface">
+                                <span v-for="type in entitiesMap[item.type].baseClasses">
+                                    🠞 {{ entitiesMap[type].simpleName }}
                                 </span>
-                                <span v-for="interface in entitiesMap[item.clazz].interfaces">
-                                    ⊕ {{ entitiesMap[interface].simpleName }}
+                                <span v-for="type in entitiesMap[item.type].interfaces">
+                                    ⊕ {{ entitiesMap[type].simpleName }}
                                 </span>
                             </div>
-                            <div class="entity-info-full-classname smaller">{{ item.clazz }}</div>
+                            <div class="entity-info-full-classname smaller">{{ item.type }}</div>
                         </td>
                         <td>
                             <div>
@@ -49,8 +49,8 @@
                         </td>
                         <td>
                             <div class="v-buttons">
-                                <button class="edit" @click="openEdit(item.clazz)">Edit</button>
-                                <button class="remove" @click="removeByClass(item.clazz)">Remove</button>
+                                <button class="edit" @click="openEdit(item.type)">Edit</button>
+                                <button class="remove" @click="removeByClass(item.type)">Remove</button>
                             </div>
                         </td>
                     </tr>
@@ -67,25 +67,25 @@
             </div>
             <div class="entity-list" ref="entityListDiv">
                 <table>
-                    <tr v-for="item in visibleItems" :key="item.clazz">
+                    <tr v-for="item in visibleItems" :key="item.type">
                         <td>
                             <div class="entity-info-header" :class="{ 'entity-info-interface': item.isInterface }">
                                 <div class="entity-info-classname">{{ item.simpleName }}</div>
                                 <div class="smaller entity-info-id" v-if="item.id">{{ item.id }}</div>
                             </div>
                             <div class="entity-info-hierarchy smaller" v-if="!item.isInterface">
-                                <span class="entity-tree" v-for="clazz in item.baseClasses">
-                                    🠞 {{ entitiesMap[clazz].simpleName }}
+                                <span class="entity-tree" v-for="type in item.baseClasses">
+                                    🠞 {{ entitiesMap[type].simpleName }}
                                 </span>
-                                <span class="entity-tree" v-for="interface in item.interfaces">
-                                    ⊕ {{ entitiesMap[interface].simpleName }}
+                                <span class="entity-tree" v-for="type in item.interfaces">
+                                    ⊕ {{ entitiesMap[type].simpleName }}
                                 </span>
                             </div>
-                            <div class="entity-info-full-classname smaller">{{ item.clazz }}</div>
+                            <div class="entity-info-full-classname smaller">{{ item.type }}</div>
                         </td>
                         <td class="last-cell">
-                            <button class="edit" @click="openEdit(item.clazz)">
-                                {{ entitiesConfigMap[item.clazz] ? 'Edit' : 'Add' }}
+                            <button class="edit" @click="openEdit(item.type)">
+                                {{ entitiesConfigMap[item.type] ? 'Edit' : 'Add' }}
                             </button>
                         </td>
                     </tr>
@@ -99,13 +99,13 @@
             </div>
             <div class="entity-edit" v-if="selectedConfig">
                 <div class="edit-entity-header">
-                    <div>{{ entitiesMap[selectedConfig.clazz].simpleName }}</div>
+                    <div>{{ entitiesMap[selectedConfig.type].simpleName }}</div>
                     <div class="smaller">
-                        <span class="entity-tree" v-for="clazz in entitiesMap[selectedConfig.clazz].baseClasses">
-                            🠞 {{ entitiesMap[clazz].simpleName }}
+                        <span class="entity-tree" v-for="type in entitiesMap[selectedConfig.type].baseClasses">
+                            🠞 {{ entitiesMap[type].simpleName }}
                         </span>
-                        <span class="entity-tree" v-for="interface in entitiesMap[selectedConfig.clazz].interfaces">
-                            ⊕ {{ entitiesMap[interface].simpleName }}
+                        <span class="entity-tree" v-for="type in entitiesMap[selectedConfig.type].interfaces">
+                            ⊕ {{ entitiesMap[type].simpleName }}
                         </span>
                     </div>
                 </div>

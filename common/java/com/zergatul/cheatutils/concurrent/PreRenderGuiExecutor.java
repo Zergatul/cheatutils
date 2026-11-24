@@ -5,7 +5,7 @@ import com.zergatul.cheatutils.common.events.RenderGuiEvent;
 
 public class PreRenderGuiExecutor extends EventExecutor {
 
-    public static final PreRenderGuiExecutor instance = new PreRenderGuiExecutor();
+    public static final PreRenderGuiExecutor INSTANCE = new PreRenderGuiExecutor();
 
     private PreRenderGuiExecutor() {
         super(5000);

@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.AutoTotemConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.AutoTotemConfig;
+import com.zergatul.cheatutils.modules.automation.AutoTotem;
 
-public class AutoTotemApi extends ModuleApi<AutoTotemConfig> {
-
-    @Override
-    protected AutoTotemConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoTotemConfig;
+public class AutoTotemApi extends SettingHandleApi<AutoTotemConfig> {
+    public AutoTotemApi() {
+        super(AutoTotem.INSTANCE.getSettings());
     }
 }

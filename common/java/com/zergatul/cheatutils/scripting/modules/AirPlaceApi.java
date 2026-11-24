@@ -11,17 +11,17 @@ public class AirPlaceApi {
             Checks if Air Place is active
             """)
     public boolean isEnabled() {
-        return AirPlace.instance.isActive();
+        return AirPlace.INSTANCE.isActive();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void enable() {
-        AirPlace.instance.enable();
+        AirPlace.INSTANCE.enable();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void disable() {
-        AirPlace.instance.disable();
+        AirPlace.INSTANCE.disable();
     }
 
     @MethodDescription("""
@@ -29,6 +29,6 @@ public class AirPlaceApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        AirPlace.instance.toggle();
+        AirPlace.INSTANCE.toggle();
     }
 }

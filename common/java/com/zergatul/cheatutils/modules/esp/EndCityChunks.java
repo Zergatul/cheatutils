@@ -1,13 +1,12 @@
 package com.zergatul.cheatutils.modules.esp;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.Config;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EndCityChunksConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.EndCityChunksConfig;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
 import com.zergatul.cheatutils.render.Position3dColorRenderer;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.Level;
@@ -19,19 +18,24 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class EndCityChunks {
 
-    public static final EndCityChunks instance = new EndCityChunks();
+    public static final EndCityChunks INSTANCE = new EndCityChunks();
 
+    private final SettingHandle<EndCityChunksConfig> settings = Settings.get(EndCityChunksConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private EndCityChunks() {
         Events.AfterRenderWorld.add(this::render);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("end-city-chunks", settings, EndCityChunksConfig.class);
+    }
+
+    public SettingHandle<EndCityChunksConfig> getSettings() {
+        return settings;
     }
 
     private void render(RenderWorldLastEvent event) {
-        Config config = ConfigStore.instance.getConfig();
-        if (!EspGlobal.enabled || !config.endCityChunksConfig.enabled) {
+        EndCityChunksConfig config = settings.get();
+        if (!EspGlobal.enabled || !config.enabled()) {
             return;
         }
 
@@ -44,7 +48,7 @@ public class EndCityChunks {
 
         Vec3 cameraPos = event.getCameraPos();
 
-        AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.instance.getRawChunks();
+        AtomicReferenceArray<LevelChunk> chunks = BlockEventsProcessor.INSTANCE.getRawChunks();
         for (int i = 0; i < chunks.length(); i++) {
             LevelChunk chunk = chunks.get(i);
             if (chunk == null) {
@@ -74,22 +78,5 @@ public class EndCityChunks {
         }
 
         renderer.end(event.getMvp());
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<EndCityChunksConfig> {
-
-        public WebApi() {
-            super("end-city-chunks", EndCityChunksConfig.class);
-        }
-
-        @Override
-        protected EndCityChunksConfig getConfig() {
-            return ConfigStore.instance.getConfig().endCityChunksConfig;
-        }
-
-        @Override
-        protected void setConfig(EndCityChunksConfig config) {
-            ConfigStore.instance.getConfig().endCityChunksConfig = config;
-        }
     }
 }

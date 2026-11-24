@@ -78,9 +78,9 @@ public class ListScriptsTool implements McpTool {
                         .withItems(ScriptWorkspace.INSTANCE.getAllInstances()
                                 .stream().map(instance -> {
                                     JsonObject item = new JsonObject();
-                                    item.addProperty("type", instance.ref.type().toString());
-                                    if (instance.ref.identifier() != null) {
-                                        item.addProperty("identifier", instance.ref.identifier());
+                                    item.addProperty("type", instance.ref().type().toString());
+                                    if (instance.ref().identifier() != null) {
+                                        item.addProperty("identifier", instance.ref().identifier());
                                     }
                                     return item;
                                 }))

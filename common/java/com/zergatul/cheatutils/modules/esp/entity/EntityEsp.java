@@ -4,8 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.Constants;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.EntityEspConfig;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.modules.esp.EspGlobal;
 import com.zergatul.cheatutils.modules.esp.entity.web.*;
@@ -30,13 +32,14 @@ import java.util.List;
 
 public class EntityEsp implements Module {
 
-    public static final EntityEsp instance = new EntityEsp();
+    public static final EntityEsp INSTANCE = new EntityEsp();
 
     private final Minecraft mc = Minecraft.getInstance();
+    private final SettingHandle<EntityEspConfig> settings = Settings.get(EntityEspConfig.class);
     private final List<MatchedEntity> bbList = new ArrayList<>();
     private final List<MatchedEntity> tracerList = new ArrayList<>();
-    private final Map<EntityEspConfig, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
-    private final Map<EntityEspConfig, List<EntityRenderState>> outlineEntityStates = new IdentityHashMap<>();
+    private final Map<EntityEspEntry, List<EntityRenderState>> overlayEntityStates = new IdentityHashMap<>();
+    private final Map<EntityEspEntry, List<EntityRenderState>> outlineEntityStates = new IdentityHashMap<>();
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final RenderBuffers renderBuffers = new RenderBuffers(1);
     private final FeatureRenderDispatcher dispatcher;
@@ -44,7 +47,7 @@ public class EntityEsp implements Module {
     private boolean enabled = true;
 
     private EntityEsp() {
-        Events.BeforeRenderWorld.add(this::onBeforeRenderWorld);
+        Events.RenderStateExtractStart.add(this::onBeforeRenderStateExtract);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
         Events.RenderBuffersCleanUp.add(this::onRenderBuffersCleanUp);
         Events.Close.add(this::onClose);
@@ -64,6 +67,10 @@ public class EntityEsp implements Module {
         this.scriptRuntime = EntityEspScriptRuntime.INSTANCE;
     }
 
+    public SettingHandle<EntityEspConfig> getSettings() {
+        return settings;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -80,8 +87,8 @@ public class EntityEsp implements Module {
         boolean overlayFound = false;
         boolean outlineFound = false;
 
-        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
-            if (!config.enabled) {
+        for (EntityEspEntry config : settings.get().entries()) {
+            if (!config.enabled()) {
                 continue;
             }
 
@@ -90,7 +97,7 @@ public class EntityEsp implements Module {
             }
 
             if (!overlayFound) {
-                overlayFound = config.drawOverlay &&
+                overlayFound = config.drawOverlay() &&
                         entity.distanceToSqr(mc.player) < config.getOverlayMaxDistanceSqr() &&
                         !isOverlayDisabledFromScript(config, entity);
                 if (overlayFound) {
@@ -124,7 +131,7 @@ public class EntityEsp implements Module {
         if (mc.player == null) {
             return false;
         }
-        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
+        for (EntityEspEntry config : settings.get().entries()) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity) && entity.distanceToSqr(mc.player) < config.getOutlineMaxDistanceSqr()) {
                 return !isOutlineDisabledFromScript(config, entity);
             }
@@ -136,15 +143,15 @@ public class EntityEsp implements Module {
         if (!EspGlobal.enabled) {
             return null;
         }
-        for (EntityEspConfig config : ConfigStore.instance.getConfig().entities.configs) {
+        for (EntityEspEntry config : settings.get().entries()) {
             if (config.useMinecraftOutline() && config.isValidEntity(entity)) {
-                return config.outlineColor.getRGB();
+                return config.outlineColor().getRGB();
             }
         }
         return null;
     }
 
-    private void onBeforeRenderWorld() {
+    private void onBeforeRenderStateExtract() {
         scriptRuntime.clearScriptResults();
     }
 
@@ -155,7 +162,7 @@ public class EntityEsp implements Module {
             return;
         }
 
-        ImmutableList<EntityEspConfig> list = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspEntry> list = settings.get().entries();
         if (list.isEmpty()) {
             return;
         }
@@ -168,9 +175,9 @@ public class EntityEsp implements Module {
         double playerY = playerPos.y;
         double playerZ = playerPos.z;
 
-        LineRenderer lineRenderer = LineRenderer.getInstance();
-        lineRenderer.begin();
-        TracerRenderer tracerRenderer = TracerRenderer.getInstance();
+        InstancedCuboidLineRenderer cuboidRenderer = InstancedCuboidLineRenderer.getInstance();
+        cuboidRenderer.begin();
+        InstancedTracerRenderer tracerRenderer = InstancedTracerRenderer.getInstance();
         tracerRenderer.begin();
 
         bbList.clear();
@@ -190,9 +197,9 @@ public class EntityEsp implements Module {
             double dz = entity.getZ() - playerZ;
             double distanceSqr = dx * dx + dy * dy + dz * dz;
 
-            EntityEspConfig bbConfig = list.stream().filter(c ->
-                    c.enabled &&
-                    c.drawBoundingBox &&
+            EntityEspEntry bbConfig = list.stream().filter(c ->
+                    c.enabled() &&
+                    c.drawBoundingBox() &&
                     c.isValidEntity(entity) &&
                     distanceSqr < c.getBoundingBoxMaxDistanceSqr()).findFirst().orElse(null);
 
@@ -200,11 +207,11 @@ public class EntityEsp implements Module {
                 bbList.add(new MatchedEntity(entity, bbConfig));
             }
 
-            EntityEspConfig tracerConfig = list.stream().filter(c ->
-                    c.enabled &&
-                            c.drawTracers &&
-                            c.clazz.isInstance(entity) &&
-                            distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
+            EntityEspEntry tracerConfig = list.stream().filter(c ->
+                    c.enabled() &&
+                    c.drawTracers() &&
+                    c.type().isInstance(entity) &&
+                    distanceSqr < c.getTracerMaxDistanceSqr()).findFirst().orElse(null);
 
             if (tracerConfig != null && !isTracerDisabledFromScript(tracerConfig, entity)) {
                 tracerList.add(new MatchedEntity(entity, tracerConfig, scriptRuntime.getTracerColorOverride(tracerConfig, entity)));
@@ -212,10 +219,10 @@ public class EntityEsp implements Module {
         }
 
         if (!bbList.isEmpty() || !tracerList.isEmpty()) {
-            renderLines(lineRenderer, tracerRenderer, event);
+            renderLines(cuboidRenderer, tracerRenderer, event);
         }
 
-        lineRenderer.end(event.getMvp());
+        cuboidRenderer.end(event.getMvp());
         tracerRenderer.end(event.getMvp());
 
         drawOverlays(list, event);
@@ -236,7 +243,7 @@ public class EntityEsp implements Module {
         renderBuffers.close();
     }
 
-    private void renderLines(LineRenderer lineRenderer, TracerRenderer tracerRenderer, RenderWorldLastEvent event) {
+    private void renderLines(InstancedCuboidLineRenderer cuboidRenderer, InstancedTracerRenderer tracerRenderer, RenderWorldLastEvent event) {
         Vec3 cameraPos = event.getCameraPos();
         double cameraX = cameraPos.x;
         double cameraY = cameraPos.y;
@@ -247,23 +254,23 @@ public class EntityEsp implements Module {
         for (MatchedEntity entry : bbList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
             AABB box = entry.entity.getDimensions(entry.entity.getPose()).makeBoundingBox(pos);
-            lineRenderer.cuboid(
+            cuboidRenderer.cuboid(
                     (float) (box.minX - cameraX), (float) (box.minY - cameraY), (float) (box.minZ - cameraZ),
                     (float) (box.maxX - cameraX), (float) (box.maxY - cameraY), (float) (box.maxZ - cameraZ),
-                    entry.config.boundingBoxColor.getRGB(),
-                    (float) entry.config.boundingBoxWidth);
+                    entry.config.boundingBoxColor().getRGB(),
+                    (float) entry.config.boundingBoxWidth());
         }
 
         for (MatchedEntity entry : tracerList) {
             Vec3 pos = entry.entity.getPosition(partialTicks);
             tracerRenderer.tracer(
                     (float) (pos.x - cameraX), (float) (pos.y - cameraY), (float) (pos.z - cameraZ),
-                    entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor.getRGB(),
-                    (float) entry.config.tracerWidth);
+                    entry.colorOverride != null ? entry.colorOverride : entry.config.tracerColor().getRGB(),
+                    (float) entry.config.tracerWidth());
         }
     }
 
-    private void drawOverlays(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
+    private void drawOverlays(ImmutableList<EntityEspEntry> list, RenderWorldLastEvent event) {
         if (overlayEntityStates.isEmpty()) {
             return;
         }
@@ -276,7 +283,7 @@ public class EntityEsp implements Module {
         PoseStack poseStack = new PoseStack();
         EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
         EntityEspOverlayRenderer renderer = EntityEspOverlayRenderer.getInstance();
-        for (EntityEspConfig config : list) {
+        for (EntityEspEntry config : list) {
             List<EntityRenderState> states = overlayEntityStates.get(config);
             if (states == null || states.isEmpty()) {
                 continue;
@@ -287,11 +294,11 @@ public class EntityEsp implements Module {
             try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
                 renderer.draw(frame);
             }
-            renderer.end(config.overlayColor);
+            renderer.end(config.overlayColor());
         }
     }
 
-    private void drawOutlines(ImmutableList<EntityEspConfig> list, RenderWorldLastEvent event) {
+    private void drawOutlines(ImmutableList<EntityEspEntry> list, RenderWorldLastEvent event) {
         if (outlineEntityStates.isEmpty()) {
             return;
         }
@@ -304,7 +311,7 @@ public class EntityEsp implements Module {
         PoseStack poseStack = new PoseStack();
         EntityRenderDispatcher renderDispatcher = mc.getEntityRenderDispatcher();
         EntityEspOutlineRenderer renderer = EntityEspOutlineRenderer.getInstance();
-        for (EntityEspConfig config : list) {
+        for (EntityEspEntry config : list) {
             List<EntityRenderState> states = outlineEntityStates.get(config);
             if (states == null || states.isEmpty()) {
                 continue;
@@ -315,7 +322,7 @@ public class EntityEsp implements Module {
             try (FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(submitNodeStorage)) {
                 renderer.draw(frame);
             }
-            renderer.end(config.outlineColor);
+            renderer.end(config.outlineColor());
         }
     }
 
@@ -336,24 +343,24 @@ public class EntityEsp implements Module {
         }
     }
 
-    private boolean isCollisionBoxDisabledFromScript(EntityEspConfig config, Entity entity) {
+    private boolean isCollisionBoxDisabledFromScript(EntityEspEntry config, Entity entity) {
         return scriptRuntime.getBooleanFromScript(config, entity, result -> result.collisionBoxDisabled);
     }
 
-    private boolean isTracerDisabledFromScript(EntityEspConfig config, Entity entity) {
+    private boolean isTracerDisabledFromScript(EntityEspEntry config, Entity entity) {
         return scriptRuntime.getBooleanFromScript(config, entity, result -> result.tracerDisabled);
     }
 
-    private boolean isOverlayDisabledFromScript(EntityEspConfig config, Entity entity) {
+    private boolean isOverlayDisabledFromScript(EntityEspEntry config, Entity entity) {
         return scriptRuntime.getBooleanFromScript(config, entity, result -> result.overlayDisabled);
     }
 
-    private boolean isOutlineDisabledFromScript(EntityEspConfig config, Entity entity) {
+    private boolean isOutlineDisabledFromScript(EntityEspEntry config, Entity entity) {
         return scriptRuntime.getBooleanFromScript(config, entity, result -> result.outlineDisabled);
     }
 
-    private record MatchedEntity(Entity entity, EntityEspConfig config, @Nullable Integer colorOverride) {
-        public MatchedEntity(Entity entity, EntityEspConfig config) {
+    private record MatchedEntity(Entity entity, EntityEspEntry config, @Nullable Integer colorOverride) {
+        public MatchedEntity(Entity entity, EntityEspEntry config) {
             this(entity, config, null);
         }
     }

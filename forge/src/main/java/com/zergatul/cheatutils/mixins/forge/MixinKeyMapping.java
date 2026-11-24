@@ -1,6 +1,6 @@
 package com.zergatul.cheatutils.mixins.forge;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.modules.hacks.InvMove;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.extensions.IForgeKeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,7 +10,7 @@ public abstract class MixinKeyMapping implements IForgeKeyMapping {
 
     @Override
     public boolean isConflictContextAndModifierActive() {
-        if (ConfigStore.instance.getConfig().invMoveConfig.enabled) {
+        if (InvMove.INSTANCE.getSettings().get().enabled()) {
             return true;
         } else {
             return IForgeKeyMapping.super.isConflictContextAndModifierActive();

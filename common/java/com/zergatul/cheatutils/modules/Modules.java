@@ -2,7 +2,6 @@ package com.zergatul.cheatutils.modules;
 
 import com.zergatul.cheatutils.concurrent.*;
 import com.zergatul.cheatutils.controllers.*;
-import com.zergatul.cheatutils.font.FontBackendHolders;
 import com.zergatul.cheatutils.modules.automation.*;
 import com.zergatul.cheatutils.modules.automation.schematica.Schematica;
 import com.zergatul.cheatutils.modules.esp.*;
@@ -15,84 +14,84 @@ import com.zergatul.cheatutils.modules.utilities.*;
 import com.zergatul.cheatutils.modules.visuals.*;
 import com.zergatul.cheatutils.scripting.ScriptExecutionManager;
 import com.zergatul.cheatutils.scripting.ScriptRuntimeFailureHandler;
+import com.zergatul.cheatutils.scripting.workspace.ScriptWorkspace;
 
 public class Modules {
 
     public static void register() {
-        register(ScriptExecutionManager.instance);
-        register(ScriptRuntimeFailureHandler.instance);
+        register(ScriptExecutionManager.INSTANCE);
+        register(ScriptRuntimeFailureHandler.INSTANCE);
+        // reloads scripts on Events.ProfileLoaded
+        register(ScriptWorkspace.INSTANCE);
 
         //Order dependent modules -> legacy method, use Event.event.add(function, priority) for new modules, use the priority value instead
         //==========================
 
         //===========================
 
-        register(FakeRotation.instance);
-        register(BlockEventsProcessor.instance);
-        register(NetworkPacketsController.instance);
-        register(SpeedCounterController.instance);
-        register(BlockFinder.instance);
-        register(PreRenderGuiExecutor.instance);
+        register(FakeRotation.INSTANCE);
+        register(BlockEventsProcessor.INSTANCE);
+        register(SpeedCounterController.INSTANCE);
+        register(BlockFinder.INSTANCE);
+        register(PreRenderGuiExecutor.INSTANCE);
 
-        register(AutoTotem.instance);
-        register(AutoEat.instance);
-        register(NoFall.instance);
-        register(Scaffold.instance);
-        register(ElytraBounce.instance);
-        register(ParkourAssist.instance);
+        register(AutoTotem.INSTANCE);
+        register(AutoEat.INSTANCE);
+        register(NoFall.INSTANCE);
+        register(Scaffold.INSTANCE);
+        register(ElytraBounce.INSTANCE);
+        register(ParkourAssist.INSTANCE);
 
-        register(LockInputsController.instance);
-        register(AutoCraft.instance);
-        register(BlockEsp.instance);
-        register(ProjectilePath.instance);
-        register(EndCityChunks.instance);
-        register(AutoBucket.instance);
+        register(AutoCraft.INSTANCE);
+        register(BlockEsp.INSTANCE);
+        register(ProjectilePath.INSTANCE);
+        register(EndCityChunks.INSTANCE);
+        register(AutoBucket.INSTANCE);
         register(WorldDownload.INSTANCE);
-        register(EntityTitle.instance);
-        register(ContainerButtonsController.instance);
-        register(TeleportHack.instance);
-        register(WorldMarkers.instance);
-        register(TpsCounterController.instance);
-        register(BlockAutomation.instance);
-        register(PlayerInfoController.instance);
+        register(EntityTitle.INSTANCE);
+        register(TeleportHack.INSTANCE);
+        register(WorldMarkers.INSTANCE);
+        register(TpsCounterController.INSTANCE);
+        register(BlockAutomation.INSTANCE);
+        register(PlayerInfoController.INSTANCE);
 
-        register(FlyHack.instance);
-        register(FreeCam.instance);
-        register(AutoFish.instance);
-        register(ChunkOverlayController.instance);
-        register(StatusOverlay.instance);
-        register(AutoCriticals.instance);
-        register(LightLevel.instance);
-        register(ElytraFly.instance);
-        register(AdvancedTooltips.instance);
-        register(Zoom.instance);
-        register(ShulkerTooltip.instance);
-        register(ArmorOverlay.instance);
-        register(Fog.instance);
-        register(AutoAttack.instance);
+        register(FlyHack.INSTANCE);
+        register(FreeCam.INSTANCE);
+        register(AutoFish.INSTANCE);
+        register(ChunkOverlayController.INSTANCE);
+        register(StatusOverlay.INSTANCE);
+        register(AutoCriticals.INSTANCE);
+        register(LightLevel.INSTANCE);
+        register(ElytraFly.INSTANCE);
+        register(AdvancedTooltips.INSTANCE);
+        register(Zoom.INSTANCE);
+        register(ShulkerTooltip.INSTANCE);
+        register(ArmorOverlay.INSTANCE);
+        register(Fog.INSTANCE);
+        register(AutoAttack.INSTANCE);
 
-        register(Exec.instance);
-        register(VillagerRoller.instance);
-        register(AutoHotbar.instance);
-        register(AreaMine.instance);
-        register(ServerPlugins.instance);
-        register(BedrockBreaker.instance);
-        register(Containers.instance);
-        register(AntiHunger.instance);
-        register(Schematica.instance);
-        register(AimAssist.instance);
-        register(LockInputs.instance);
-        register(LogoutSpots.instance);
-        register(AutoTool.instance);
-        register(AirPlace.instance);
-        register(ContainerSummary.instance);
-        register(CrystalAura.instance);
-        register(FullBright.instance);
-        register(InvMove.instance);
-        register(HitboxSize.instance);
-        register(BetterStatusEffects.instance);
+        register(Exec.INSTANCE);
+        register(VillagerRoller.INSTANCE);
+        register(AutoHotbar.INSTANCE);
+        register(AreaMine.INSTANCE);
+        register(ServerPlugins.INSTANCE);
+        register(BedrockBreaker.INSTANCE);
+        register(Containers.INSTANCE);
+        register(AntiHunger.INSTANCE);
+        register(Schematica.INSTANCE);
+        register(AimAssist.INSTANCE);
+        register(LockInputs.INSTANCE);
+        register(LogoutSpots.INSTANCE);
+        register(AutoTool.INSTANCE);
+        register(AirPlace.INSTANCE);
+        register(ContainerSummary.INSTANCE);
+        register(CrystalAura.INSTANCE);
+        register(FullBright.INSTANCE);
+        register(InvMove.INSTANCE);
+        register(HitboxSize.INSTANCE);
+        register(BetterStatusEffects.INSTANCE);
         register(BoatHack.INSTANCE);
-        register(Blink.instance);
+        register(Blink.INSTANCE);
         register(PigHack.INSTANCE);
         register(AutoDrop.INSTANCE);
         register(EditorConfig.INSTANCE);
@@ -116,32 +115,28 @@ public class Modules {
         register(ElytraTunnel.INSTANCE);
         register(Movement.INSTANCE);
         register(Debugging.INSTANCE);
+        register(TridentHack.INSTANCE);
 
-        register(EventsScripting.instance);
+        register(EventsScripting.INSTANCE);
 
-        register(Privacy.instance);
+        register(Privacy.INSTANCE);
 
-        register(ClientTickEndExecutor.instance);
-        register(InGameTickEndExecutor.instance);
+        register(ClientTickEndExecutor.INSTANCE);
+        register(InGameTickEndExecutor.INSTANCE);
 
         // new order independent modules
         //==========================================
-        register(AfterPlayerAiStepExecutor.instance);
-        register(AfterSendPlayerPosExecutor.instance);
-        register(KillAura.instance);
+        register(AfterPlayerAiStepExecutor.INSTANCE);
+        register(AfterSendPlayerPosExecutor.INSTANCE);
+        register(KillAura.INSTANCE);
 
-        register(SpearRange.instance);
-        register(AutoStunner.instance);
-        register(BreachSwap.instance);
+        register(SpearRange.INSTANCE);
+        register(AutoStunner.INSTANCE);
+        register(BreachSwap.INSTANCE);
         //===========================================
-    }
 
-    public static void registerKeyBindings() {
-        register(KeyBindings.instance);
-    }
-
-    public static void lateRegister() {
-        register(EntityEsp.instance);
+        // last: its render handlers run after the ones of other modules
+        register(EntityEsp.INSTANCE);
     }
 
     private static void register(Object instance) {}

@@ -3,8 +3,8 @@ package com.zergatul.cheatutils.mixins.common;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.HandsViewConfig;
+import com.zergatul.cheatutils.configs.modules.HandsViewConfig;
+import com.zergatul.cheatutils.modules.visuals.HandsView;
 import net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -29,25 +29,25 @@ public abstract class MixinFirstPersonHandsAndItemsRenderer {
             PlayerRenderState playerState,
             CallbackInfo info
     ) {
-        HandsViewConfig config = ConfigStore.instance.getConfig().handsViewConfig;
-        if (!config.enabled) {
+        HandsViewConfig config = HandsView.INSTANCE.getSettings().get();
+        if (!config.enabled()) {
             return;
         }
-        if (!config.renderArms) {
+        if (!config.renderArms()) {
             info.cancel();
             return;
         }
 
         if (arm == HumanoidArm.RIGHT) {
-            poseStack.translate(config.armsShift);
+            poseStack.translate(config.armsShift());
         } else {
-            poseStack.translate(config.armsShift.multiply(-1, 1, 1));
+            poseStack.translate(config.armsShift().multiply(-1, 1, 1));
         }
 
         poseStack.scale(
-                (float) config.armsScale.x,
-                (float) config.armsScale.y,
-                (float) config.armsScale.z);
+                (float) config.armsScale().x,
+                (float) config.armsScale().y,
+                (float) config.armsScale().z);
     }
 
     @WrapWithCondition(
@@ -65,24 +65,24 @@ public abstract class MixinFirstPersonHandsAndItemsRenderer {
             int outlineColor,
             @Local(name = "arm") HumanoidArm arm
     ) {
-        HandsViewConfig config = ConfigStore.instance.getConfig().handsViewConfig;
-        if (!config.enabled) {
+        HandsViewConfig config = HandsView.INSTANCE.getSettings().get();
+        if (!config.enabled()) {
             return true;
         }
-        if (!config.renderItems) {
+        if (!config.renderItems()) {
             return false;
         }
 
         if (arm == HumanoidArm.RIGHT) {
-            poseStack.translate(config.itemsShift);
+            poseStack.translate(config.itemsShift());
         } else {
-            poseStack.translate(config.itemsShift.multiply(-1, 1, 1));
+            poseStack.translate(config.itemsShift().multiply(-1, 1, 1));
         }
 
         poseStack.scale(
-                (float) config.itemsScale.x,
-                (float) config.itemsScale.y,
-                (float) config.itemsScale.z);
+                (float) config.itemsScale().x,
+                (float) config.itemsScale().y,
+                (float) config.itemsScale().z);
 
         return true;
     }

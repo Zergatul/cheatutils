@@ -1,9 +1,9 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.zergatul.cheatutils.configs.BlockEntityDistanceConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BlockEntityDistanceConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
 public class BlockEntityDistance implements Module {
@@ -11,24 +11,18 @@ public class BlockEntityDistance implements Module {
     public static final BlockEntityDistance INSTANCE = new BlockEntityDistance();
     public static int VIEW_DISTANCE_CACHED = 64;
 
+    private final SettingHandle<BlockEntityDistanceConfig> settings = Settings.get(BlockEntityDistanceConfig.class);
+
     private BlockEntityDistance() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        settings.onChanged(this::onConfigChanged);
+        WebApiRegistry.INSTANCE.register("block-entity-distance", settings, BlockEntityDistanceConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<BlockEntityDistanceConfig> {
+    public SettingHandle<BlockEntityDistanceConfig> getSettings() {
+        return settings;
+    }
 
-        public WebApi() {
-            super("block-entity-distance", BlockEntityDistanceConfig.class);
-        }
-
-        @Override
-        protected BlockEntityDistanceConfig getConfig() {
-            return ConfigStore.instance.getConfig().blockEntityDistance;
-        }
-
-        @Override
-        protected void setConfig(BlockEntityDistanceConfig config) {
-            ConfigStore.instance.getConfig().blockEntityDistance = config;
-        }
+    private void onConfigChanged(BlockEntityDistanceConfig prev, BlockEntityDistanceConfig curr) {
+        VIEW_DISTANCE_CACHED = curr.enabled() ? curr.viewDistance() : 64;
     }
 }

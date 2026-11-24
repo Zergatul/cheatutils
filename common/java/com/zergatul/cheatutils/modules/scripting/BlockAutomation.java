@@ -6,8 +6,10 @@ import com.zergatul.cheatutils.blocks.BlockPlacePlan;
 import com.zergatul.cheatutils.blocks.BlockPlacer;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.BlockAutomationConfig;
+import com.zergatul.cheatutils.concurrent.ClientThread;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.modules.automation.VillagerRoller;
 import com.zergatul.cheatutils.scripting.events.BlockPosConsumer;
@@ -18,7 +20,7 @@ import com.zergatul.cheatutils.blocks.BlockPlacingMethod;
 import com.zergatul.cheatutils.utils.NearbyBlockEnumerator;
 import com.zergatul.cheatutils.utils.SlotSelector;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -32,11 +34,12 @@ import java.util.function.Predicate;
 
 public class BlockAutomation {
 
-    public static final BlockAutomation instance = new BlockAutomation();
+    public static final BlockAutomation INSTANCE = new BlockAutomation();
 
+    private final SettingHandle<BlockAutomationConfig> settings = Settings.get(BlockAutomationConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final SlotSelector slotSelector = new SlotSelector();
-    private volatile ScriptActivation<BlockPosConsumer> script;
+    private ScriptActivation<BlockPosConsumer> script; // client thread
     private Predicate<ItemStack> useItemPredicate;
     private InteractionHand hand;
     private BlockPlacingMethod method;
@@ -45,7 +48,7 @@ public class BlockAutomation {
     private boolean breakWithAutoTool;
     private BlockBreakPlan breakPlan;
     private BlockPlacePlan placePlan;
-    private volatile boolean debugStep;
+    private boolean debugStep;
     private double actionTickCounter;
     private CompletableFuture<Void> applyFuture;
 
@@ -57,7 +60,12 @@ public class BlockAutomation {
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
     }
 
+    public SettingHandle<BlockAutomationConfig> getSettings() {
+        return settings;
+    }
+
     public void setScript(BlockPosConsumer script) {
+        ClientThread.assertCurrent();
         ScriptActivation<BlockPosConsumer> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -96,8 +104,8 @@ public class BlockAutomation {
     }
 
     public boolean isBreakingBlock() {
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
-        if (!config.enabled) {
+        BlockAutomationConfig config = settings.get();
+        if (!config.enabled()) {
             return false;
         }
         ScriptActivation<BlockPosConsumer> script = this.script;
@@ -110,9 +118,9 @@ public class BlockAutomation {
 
     private void onAfterPlayerAiStep() {
         ScriptActivation<BlockPosConsumer> script = this.script;
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomationConfig config = settings.get();
         // Block Automation code stops breaking lectern after first tick for Villager Roller
-        if (!config.enabled || VillagerRoller.instance.isActive()) {
+        if (!config.enabled() || VillagerRoller.INSTANCE.isActive()) {
             resetState();
             return;
         }
@@ -128,7 +136,7 @@ public class BlockAutomation {
         }
 
         Vec3 eyePos = mc.player.getEyePosition(1);
-        actionTickCounter += 1 / config.placementRate;
+        actionTickCounter += 1 / config.placementRate();
         if (applyFuture != null) {
             if (applyFuture.isDone()) {
                 breakPlan = null;
@@ -148,7 +156,7 @@ public class BlockAutomation {
             actionTickCounter -= 1;
 
             boolean actionPerformed = false;
-            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange)) {
+            for (BlockPos pos : NearbyBlockEnumerator.getPositions(eyePos, config.maxRange())) {
                 useItemPredicate = null;
                 hand = null;
                 breakCurrentBlock = false;
@@ -162,7 +170,7 @@ public class BlockAutomation {
                 if (breakCurrentBlock && !mc.level.isEmptyBlock(pos)) {
                     boolean proceed;
                     if (breakWithAutoTool) {
-                        AutoTool.instance.selectToolFor(pos);
+                        AutoTool.INSTANCE.selectToolFor(pos);
                         proceed = true;
                     } else {
                         proceed = selectItemForBlockBreak(config);
@@ -183,7 +191,7 @@ public class BlockAutomation {
                 if (hand != null) {
                     placePlan = BlockPlacer.createPlan(Blocks.STONE.defaultBlockState(), pos, method, config);
                     if (placePlan != null) {
-                        if (config.debugMode && !debugStep) {
+                        if (config.debugMode() && !debugStep) {
                             //debugPlan = plan; // TODO: test after actions per tick change?
                         } else {
                             debugStep = false;
@@ -204,7 +212,7 @@ public class BlockAutomation {
 
                     placePlan = BlockPlacer.createPlan(Blocks.STONE.defaultBlockState(), pos, method, config);
                     if (placePlan != null) {
-                        if (config.debugMode && !debugStep) {
+                        if (config.debugMode() && !debugStep) {
                             //debugPlan = plan; // TODO: test after actions per tick change?
                             break;
                         } else {
@@ -219,16 +227,16 @@ public class BlockAutomation {
             }
 
             if (!actionPerformed) {
-                actionTickCounter = 1 - 1 / config.placementRate;
+                actionTickCounter = 1 - 1 / config.placementRate();
             }
         }
     }
 
     private void onRenderWorldLast(RenderWorldLastEvent event) {
-        BlockAutomationConfig config = ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomationConfig config = settings.get();
 //        if (config.enabled && config.debugMode && debugPlan != null) {
 //            // draw neighbour block
-//            LineRenderer renderer = RenderUtilities.instance.getLineRenderer();
+//            InstancedLineRenderer renderer = RenderUtilities.instance.getLineRenderer();
 //
 //            renderer.begin(event, false);
 //            double x1 = debugPlan.neighbour().getX();
@@ -293,21 +301,25 @@ public class BlockAutomation {
         applyFuture = null;
     }
 
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<BlockAutomationConfig> {
+    private class ConfigWebApi extends WebApiBase {
 
-        public ConfigWebApi() {
-            super("block-automation", BlockAutomationConfig.class);
+        @Override
+        public String getRoute() {
+            return "block-automation";
         }
 
         @Override
-        protected BlockAutomationConfig getConfig() {
-            return ConfigStore.instance.getConfig().blockAutomationConfig;
+        public String get() {
+            return gson.toJson(settings.get());
         }
 
         @Override
-        protected void setConfig(BlockAutomationConfig config) {
-            BlockAutomationConfig current = ConfigStore.instance.getConfig().blockAutomationConfig;
-            config.copyTo(current);
+        public String post(String body) {
+            BlockAutomationConfig.UpdateOptions options = gson.fromJson(body, BlockAutomationConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
+            }
+            return get();
         }
     }
 

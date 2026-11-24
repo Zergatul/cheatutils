@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 public class PlayerInfoController {
 
-    public static final PlayerInfoController instance = new PlayerInfoController();
+    public static final PlayerInfoController INSTANCE = new PlayerInfoController();
 
     private final Minecraft mc = Minecraft.getInstance();
     private final List<Entry> entries = new ArrayList<>();

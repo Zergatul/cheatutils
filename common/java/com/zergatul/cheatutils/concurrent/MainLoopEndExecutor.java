@@ -4,7 +4,7 @@ import com.zergatul.cheatutils.common.Events;
 
 public class MainLoopEndExecutor extends EventExecutor {
 
-    public static final MainLoopEndExecutor instance = new MainLoopEndExecutor();
+    public static final MainLoopEndExecutor INSTANCE = new MainLoopEndExecutor();
 
     private MainLoopEndExecutor() {
         super(100);

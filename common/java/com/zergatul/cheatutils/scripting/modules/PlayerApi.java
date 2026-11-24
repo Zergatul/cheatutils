@@ -187,12 +187,12 @@ public class PlayerApi {
 
     @MethodDescription("Measured in 0.5 sec window.")
     public String getHorizontalSpeed() {
-        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getHorizontalSpeed());
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.INSTANCE.getHorizontalSpeed());
     }
 
     @MethodDescription("Measured in 0.5 sec window.")
     public String getSpeed() {
-        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.instance.getSpeed());
+        return String.format(Locale.ROOT, "%.3f", SpeedCounterController.INSTANCE.getSpeed());
     }
 
     public double getX() {
@@ -354,9 +354,9 @@ public class PlayerApi {
     @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type) {
         switch (type) {
-            case "self-attack" -> DisconnectController.instance.selfAttack(null);
-            case "invalid-chars" -> DisconnectController.instance.invalidChars(null);
-            default -> DisconnectController.instance.disconnect(null);
+            case "self-attack" -> DisconnectController.INSTANCE.selfAttack(null);
+            case "invalid-chars" -> DisconnectController.INSTANCE.invalidChars(null);
+            default -> DisconnectController.INSTANCE.disconnect(null);
         }
     }
 
@@ -367,9 +367,9 @@ public class PlayerApi {
     @ApiVisibility(ApiType.ACTION)
     public void disconnect(String type, String message) {
         switch (type) {
-            case "self-attack" -> DisconnectController.instance.selfAttack(message);
-            case "invalid-chars" -> DisconnectController.instance.invalidChars(message);
-            default -> DisconnectController.instance.disconnect(message);
+            case "self-attack" -> DisconnectController.INSTANCE.selfAttack(message);
+            case "invalid-chars" -> DisconnectController.INSTANCE.invalidChars(message);
+            default -> DisconnectController.INSTANCE.disconnect(message);
         }
     }
 

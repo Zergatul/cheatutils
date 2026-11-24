@@ -2,10 +2,10 @@ package com.zergatul.cheatutils.modules.visuals;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.GatherTooltipComponentsEvent;
-import com.zergatul.cheatutils.configs.AdvancedTooltipsConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AdvancedTooltipsConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
@@ -20,22 +20,28 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class AdvancedTooltips implements Module {
 
-    public static final AdvancedTooltips instance = new AdvancedTooltips();
+    public static final AdvancedTooltips INSTANCE = new AdvancedTooltips();
+
+    private final SettingHandle<AdvancedTooltipsConfig> settings = Settings.get(AdvancedTooltipsConfig.class);
 
     private AdvancedTooltips() {
         Events.GatherTooltipComponents.add(this::onGatherTooltipComponents);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("advanced-tooltips", settings, AdvancedTooltipsConfig.class);
+    }
+
+    public SettingHandle<AdvancedTooltipsConfig> getSettings() {
+        return settings;
     }
 
     private void onGatherTooltipComponents(GatherTooltipComponentsEvent event) {
-        AdvancedTooltipsConfig config = ConfigStore.instance.getConfig().advancedTooltipsConfig;
+        AdvancedTooltipsConfig config = settings.get();
         handleBeeContainer(config, event);
         handleRepairCost(config, event);
     }
 
     private void handleBeeContainer(AdvancedTooltipsConfig config, GatherTooltipComponentsEvent event) {
-        if (config.beeContainer) {
+        if (config.beeContainer()) {
             ItemStack itemStack = event.itemStack();
             Item item = itemStack.getItem();
             if (item == Items.BEE_NEST || item == Items.BEEHIVE) {
@@ -62,29 +68,12 @@ public class AdvancedTooltips implements Module {
     }
 
     private void handleRepairCost(AdvancedTooltipsConfig config, GatherTooltipComponentsEvent event) {
-        if (config.repairCost) {
+        if (config.repairCost()) {
             ItemStack itemStack = event.itemStack();
             int cost = itemStack.getOrDefault(DataComponents.REPAIR_COST, 0);
             if (cost > 0) {
                 event.list().add(MutableComponent.create(new PlainTextContents.LiteralContents("Repair cost: " + cost)).withStyle(ChatFormatting.GRAY));
             }
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AdvancedTooltipsConfig> {
-
-        public WebApi() {
-            super("advanced-tooltips", AdvancedTooltipsConfig.class);
-        }
-
-        @Override
-        protected AdvancedTooltipsConfig getConfig() {
-            return ConfigStore.instance.getConfig().advancedTooltipsConfig;
-        }
-
-        @Override
-        protected void setConfig(AdvancedTooltipsConfig config) {
-            ConfigStore.instance.getConfig().advancedTooltipsConfig = config;
         }
     }
 }

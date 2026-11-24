@@ -11,7 +11,7 @@ public abstract class MixinKeyMapping implements IKeyMappingExtension {
 
     @Override
     public boolean isActiveAndMatches(InputConstants.Key keyCode) {
-        if (InvMove.instance.shouldIgnoreKeyContext((KeyMapping) (Object) this)) {
+        if (InvMove.INSTANCE.shouldIgnoreKeyContext((KeyMapping) (Object) this)) {
             return keyCode != InputConstants.UNKNOWN && keyCode.equals(this.getKey());
         } else {
             return IKeyMappingExtension.super.isActiveAndMatches(keyCode);
@@ -20,7 +20,7 @@ public abstract class MixinKeyMapping implements IKeyMappingExtension {
 
     @Override
     public boolean isConflictContextAndModifierActive() {
-        if (InvMove.instance.shouldIgnoreKeyContext((KeyMapping) (Object) this)) {
+        if (InvMove.INSTANCE.shouldIgnoreKeyContext((KeyMapping) (Object) this)) {
             return true;
         } else {
             return IKeyMappingExtension.super.isConflictContextAndModifierActive();

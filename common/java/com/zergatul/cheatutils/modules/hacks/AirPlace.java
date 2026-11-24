@@ -3,12 +3,12 @@ package com.zergatul.cheatutils.modules.hacks;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.MouseScrollEvent;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.configs.AirPlaceConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AirPlaceConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.utils.MathUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -25,8 +25,9 @@ import java.awt.*;
 
 public class AirPlace implements Module {
 
-    public static final AirPlace instance = new AirPlace();
+    public static final AirPlace INSTANCE = new AirPlace();
 
+    private final SettingHandle<AirPlaceConfig> settings = Settings.get(AirPlaceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean active;
     private double range;
@@ -36,7 +37,7 @@ public class AirPlace implements Module {
         Events.MouseScroll.add(this::onMouseScroll);
         Events.AfterRenderWorld.add(this::onAfterRenderWorld);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("air-place", settings, AirPlaceConfig.class);
     }
 
     public boolean isActive() {
@@ -79,9 +80,9 @@ public class AirPlace implements Module {
 
     private void onMouseScroll(MouseScrollEvent event) {
         if (currentPosition != null) {
-            AirPlaceConfig config = ConfigStore.instance.getConfig().airPlaceConfig;
+            AirPlaceConfig config = settings.get();
             range += event.getScrollDelta() * 0.5;
-            range = MathUtils.clamp(range, config.minRange, config.maxRange);
+            range = MathUtils.clamp(range, config.minRange(), config.maxRange());
             event.cancel();
         }
     }
@@ -115,7 +116,7 @@ public class AirPlace implements Module {
         BlockPos blockPos = new BlockPos((int) Math.floor(pos.x), (int) Math.floor(pos.y), (int) Math.floor(pos.z));
 
         double margin = 0.05;
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
         renderer.cuboid(
                 event.getCameraPos(),
@@ -135,29 +136,12 @@ public class AirPlace implements Module {
     private void init() {
         if (range == 0) {
             // first activation
-            AirPlaceConfig config = ConfigStore.instance.getConfig().airPlaceConfig;
-            range = (config.minRange + config.maxRange) / 2;
+            AirPlaceConfig config = settings.get();
+            range = (config.minRange() + config.maxRange()) / 2;
         }
     }
 
     private void reset() {
         currentPosition = null;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AirPlaceConfig> {
-
-        public WebApi() {
-            super("air-place", AirPlaceConfig.class);
-        }
-
-        @Override
-        protected AirPlaceConfig getConfig() {
-            return ConfigStore.instance.getConfig().airPlaceConfig;
-        }
-
-        @Override
-        protected void setConfig(AirPlaceConfig config) {
-            ConfigStore.instance.getConfig().airPlaceConfig = config;
-        }
     }
 }

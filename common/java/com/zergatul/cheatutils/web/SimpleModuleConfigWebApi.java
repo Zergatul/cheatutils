@@ -31,7 +31,7 @@ public abstract class SimpleModuleConfigWebApi<T> extends WebApiBase {
                 sanitizable.sanitize();
             }
             setConfig(config);
-            ConfigStore.instance.requestWrite();
+            ConfigStore.INSTANCE.requestWrite();
         }
         return get();
     }

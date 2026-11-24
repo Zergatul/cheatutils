@@ -46,7 +46,7 @@
                                 <button class="edit" @click="openEdit(item.blocks[0])">Edit</button>
                             </td>
                             <td>
-                                <button class="remove" @click="removeById(item.blocks[0])">Remove</button>
+                                <button class="remove" @click="removeByBlocks(item.blocks)">Remove</button>
                             </td>
                         </tr>
                         <template v-if="item.expanded">

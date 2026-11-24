@@ -1,13 +1,14 @@
 import * as FallbackLoader from '/fallback-loader.js'
 import { withCss } from '/components/Loader.js'
 
-const { ref, toRefs, onMounted, onUnmounted } = await FallbackLoader.vue();
+const { ref, toRefs, watch, onMounted, onBeforeUnmount } = await FallbackLoader.vue();
 
 const DefaultMaxItems = 50;
 
 export function createComponent(template) {
     const args = {
         template: template,
+        inheritAttrs: false,
         props: {
             value: {
                 required: true
@@ -26,13 +27,17 @@ export function createComponent(template) {
             applyOnClick: {
                 type: Boolean,
                 required: false
+            },
+            allowCustomValue: {
+                type: Boolean,
+                required: false
             }
         },
-        emits: ['apply', 'cancel'],
+        emits: ['apply', 'cancel', 'update:value'],
         setup(props, { emit }) {
             const input = ref(null);
             const ul = ref(null);
-            const { value, list, autofocus, cancelOnBlur, applyOnClick } = toRefs(props);
+            const { value, list, autofocus, cancelOnBlur, applyOnClick, allowCustomValue } = toRefs(props);
 
             let currentValue;
             let maxItems = DefaultMaxItems;
@@ -52,12 +57,18 @@ export function createComponent(template) {
                 }
 
                 if (!isInnerClick) {
-                    input.value.value = currentValue;
+                    if (!allowCustomValue.value) {
+                        input.value.value = currentValue;
+                    }
                     ul.value.style.display = 'none';
                 }
             };
 
             const onInput = () => {
+                if (allowCustomValue.value) {
+                    currentValue = input.value.value;
+                    emit('update:value', currentValue);
+                }
                 const text = input.value.value.toLowerCase();
                 const parts = text.split(/\s+/);
                 const filtered = [];
@@ -92,6 +103,9 @@ export function createComponent(template) {
                     li.addEventListener('click', () => {
                         currentValue = item;
                         input.value.value = currentValue;
+                        if (allowCustomValue.value) {
+                            emit('update:value', currentValue);
+                        }
                         ul.value.style.display = 'none';
                         if (applyOnClick.value) {
                             emit('apply', currentValue);
@@ -122,7 +136,13 @@ export function createComponent(template) {
             };
 
             const onKeyDown = event => {
+                if (allowCustomValue.value && event.key == 'Tab') {
+                    ul.value.style.display = 'none';
+                }
                 if (event.key == 'Enter') {
+                    if (allowCustomValue.value) {
+                        ul.value.style.display = 'none';
+                    }
                     emit('apply', currentValue);
                 }
                 if (event.key == 'Escape') {
@@ -135,6 +155,13 @@ export function createComponent(template) {
                     emit('cancel');
                 }
             };
+
+            watch(value, newValue => {
+                if (allowCustomValue.value && input.value) {
+                    currentValue = newValue || '';
+                    input.value.value = currentValue;
+                }
+            });
 
             onMounted(() => {
                 currentValue = value.value || '';
@@ -150,7 +177,7 @@ export function createComponent(template) {
                 }
             });
 
-            onUnmounted(() => {
+            onBeforeUnmount(() => {
                 input.value.removeEventListener('input', onInput);
                 input.value.removeEventListener('keydown', onKeyDown);
                 input.value.removeEventListener('blur', onBlur);
@@ -164,4 +191,4 @@ export function createComponent(template) {
         }
     };
     return withCss(import.meta.url, args);
-};
+}

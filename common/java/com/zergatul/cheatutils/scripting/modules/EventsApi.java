@@ -18,7 +18,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onHandleKeys(Runnable action) {
-        EventsScripting.instance.addOnHandleKeys(action);
+        EventsScripting.INSTANCE.addOnHandleKeys(action);
     }
 
     @MethodDescription("""
@@ -27,7 +27,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onTickEnd(Runnable action) {
-        EventsScripting.instance.addOnTickEnd(action);
+        EventsScripting.INSTANCE.addOnTickEnd(action);
     }
 
     @MethodDescription("""
@@ -36,7 +36,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onMenuTickEnd(Runnable action) {
-        EventsScripting.instance.addOnMenuTickEnd(action);
+        EventsScripting.INSTANCE.addOnMenuTickEnd(action);
     }
 
     @MethodDescription("""
@@ -48,7 +48,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onPlayerAdded(EntityIdConsumer consumer) {
-        EventsScripting.instance.addOnPlayerAdded(consumer);
+        EventsScripting.INSTANCE.addOnPlayerAdded(consumer);
     }
 
     @MethodDescription("""
@@ -61,7 +61,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onPlayerRemoved(EntityIdConsumer consumer) {
-        EventsScripting.instance.addOnPlayerRemoved(consumer);
+        EventsScripting.INSTANCE.addOnPlayerRemoved(consumer);
     }
 
     @MethodDescription("""
@@ -74,7 +74,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onChatMessage(ChatMessageConsumer consumer) {
-        EventsScripting.instance.addOnChatMessage(consumer);
+        EventsScripting.INSTANCE.addOnChatMessage(consumer);
     }
 
     @MethodDescription("""
@@ -88,7 +88,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onChatMessageRaw(ComponentWrapperConsumer consumer) {
-        EventsScripting.instance.addOnChatMessageRaw(consumer);
+        EventsScripting.INSTANCE.addOnChatMessageRaw(consumer);
     }
 
     @MethodDescription("""
@@ -101,7 +101,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onPlayerMessageSending(PlayerMessageSendingConsumer consumer) {
-        EventsScripting.instance.addOnPlayerMessageSending(consumer);
+        EventsScripting.INSTANCE.addOnPlayerMessageSending(consumer);
     }
 
     @MethodDescription("""
@@ -113,7 +113,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onJoinServer(ServerInformationConsumer consumer) {
-        EventsScripting.instance.addOnJoinServer(consumer);
+        EventsScripting.INSTANCE.addOnJoinServer(consumer);
     }
 
     @MethodDescription("""
@@ -125,7 +125,7 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onContainerMenuSlotClick(ContainerClickConsumer consumer) {
-        EventsScripting.instance.addOnContainerMenuClick(consumer);
+        EventsScripting.INSTANCE.addOnContainerMenuClick(consumer);
     }
 
     @MethodDescription("""
@@ -139,19 +139,39 @@ public class EventsApi {
             """)
     @ApiVisibility(ApiType.EVENTS)
     public void onPlayerInfoUpdate(PlayerInfoUpdateConsumer consumer) {
-        EventsScripting.instance.addOnPlayerInfoUpdate(consumer);
+        EventsScripting.INSTANCE.addOnPlayerInfoUpdate(consumer);
     }
 
+    @MethodDescription("""
+            Some system packets may not be visible from this handler.
+            Most gameplay related packets are visible by handlers and can be canceled.
+            """)
     @AdvancedApi
     @ApiVisibility(ApiType.EVENTS)
     public void onClientToServerPacket(PacketEventConsumer consumer) {
-        EventsScripting.instance.addOnClientToServerPacket(consumer);
+        EventsScripting.INSTANCE.addOnClientToServerPacket(consumer);
     }
 
+    @MethodDescription("""
+            Some system packets may not be visible from this handler.
+            Most gameplay related packets are visible by handlers and can be canceled.
+            """)
     @AdvancedApi
     @ApiVisibility(ApiType.EVENTS)
     public void onServerToClientPacket(PacketEventConsumer consumer) {
-        EventsScripting.instance.addOnServerToClientPacket(consumer);
+        EventsScripting.INSTANCE.addOnServerToClientPacket(consumer);
+    }
+
+    @MethodDescription("""
+            Runs once when this script is removed or replaced, or stopped because of an error.
+            Use it to remove event handlers registered through Java interop and release other resources.
+            Note: disabling Events Scripting pauses its own events, but will not pause any external registrations.
+            Disabling Events Scripting will not call onUnload handlers.
+            Also these handlers will not run on Minecraft exit.
+            """)
+    @ApiVisibility(ApiType.EVENTS)
+    public void onUnload(Runnable action) {
+        EventsScripting.INSTANCE.addOnUnload(action);
     }
 
     public static class ModuleEventsApi {
@@ -173,7 +193,7 @@ public class EventsApi {
                 """)
         @ApiVisibility(ApiType.EVENTS)
         public void addTargetFilter(KillAura.TargetPredicate predicate) {
-            EventsScripting.instance.addKillAuraTargetPredicate(predicate);
+            EventsScripting.INSTANCE.addKillAuraTargetPredicate(predicate);
         }
     }
 
@@ -190,7 +210,7 @@ public class EventsApi {
                 """)
         @ApiVisibility(ApiType.EVENTS)
         public void addTargetFilter(AimAssist.TargetPredicate predicate) {
-            EventsScripting.instance.addAimAssistTargetPredicate(predicate);
+            EventsScripting.INSTANCE.addAimAssistTargetPredicate(predicate);
         }
     }
 }

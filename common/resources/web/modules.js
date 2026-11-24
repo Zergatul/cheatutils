@@ -152,14 +152,14 @@ module({
 module({
     group: 'esp',
     name: 'Block ESP',
-    component: 'BlockESP',
+    component: 'BlockEsp',
     path: 'block-esp',
     tags: ['blocks', 'esp', 'xray']
 });
 module({
     group: 'esp',
     name: 'Entity ESP',
-    component: 'EntityESP',
+    component: 'EntityEsp',
     path: 'entity-esp',
     tags: ['entity', 'entities', 'esp']
 });
@@ -390,6 +390,13 @@ module({
     path: 'crystal-aura',
     tags: ['kill', 'crystal', 'aura', 'auto', 'attack', 'blow', 'explode']
 });
+module({
+    group: 'hacks',
+    name: 'Trident Hack',
+    component: 'TridentHack',
+    path: 'trident-hack',
+    tags: ['trident', 'rip', 'tide', 'riptide']
+});
 
 // Visuals Modules ============================
 
@@ -511,7 +518,7 @@ module({
 module({
     group: 'scripting',
     name: 'Key Bindings',
-    component: 'KeyBindingScripts',
+    component: 'KeyBindings',
     path: 'key-bindings',
     tags: ['key', 'bindings', 'scripting']
 });

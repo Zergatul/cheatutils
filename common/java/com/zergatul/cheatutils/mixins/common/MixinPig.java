@@ -1,7 +1,7 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.PigHackConfig;
+import com.zergatul.cheatutils.configs.modules.PigHackConfig;
+import com.zergatul.cheatutils.modules.hacks.PigHack;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,11 +14,11 @@ public abstract class MixinPig {
 
     @Inject(at = @At("HEAD"), method = "getRiddenSpeed(Lnet/minecraft/world/entity/player/Player;)F", cancellable = true)
     private void onGetRiddenSpeed(Player controller, CallbackInfoReturnable<Float> info) {
-        PigHackConfig config = ConfigStore.instance.getConfig().pigHackConfig;
-        if (config.enabled && config.overrideSteeringSpeed) {
+        PigHackConfig config = PigHack.INSTANCE.getSettings().get();
+        if (config.enabled() && config.overrideSteeringSpeed()) {
             var pig = (Pig) (Object) this;
             if (pig.level().isClientSide()) {
-                info.setReturnValue(config.steeringSpeed);
+                info.setReturnValue(config.steeringSpeed());
                 info.cancel();
             }
         }

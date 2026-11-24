@@ -14,3 +14,65 @@ div.kill-aura table.bordered td {
     vertical-align: middle;
     padding: 0.2em 0.5em;
 }
+
+div.kill-aura span.predefined-mark {
+    cursor: default;
+}
+
+div.kill-aura .priority-class-name {
+    color: #781616;
+    overflow-wrap: anywhere;
+}
+
+div.kill-aura .priority-error {
+    color: #B02020;
+    font-family: var(--font2);
+    margin: 0.5em 0;
+}
+
+div.kill-aura dialog.class-priority-dialog {
+    background-color: var(--color4);
+    border: 0.2em solid var(--color1);
+    border-radius: 0.6em;
+    box-sizing: border-box;
+    color: var(--color1);
+    font-family: var(--font2);
+    max-height: calc(100vh - 2em);
+    overflow: visible;
+    padding: 1em;
+    width: min(36em, calc(100vw - 2em));
+}
+
+div.kill-aura dialog.class-priority-dialog::backdrop {
+    background-color: #00000088;
+}
+
+div.kill-aura dialog.class-priority-dialog h2 {
+    font-size: 1.2em;
+    margin: 0 0 1em;
+}
+
+div.kill-aura dialog.class-priority-dialog fieldset {
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+}
+
+div.kill-aura dialog.class-priority-dialog label:not(:first-child) {
+    margin-top: 0.5em;
+}
+
+div.kill-aura dialog.class-priority-dialog .actions {
+    display: flex;
+    gap: 0.5em;
+    justify-content: flex-end;
+    margin-top: 1em;
+}
+
+div.kill-aura dialog.class-priority-dialog div.autocomplete > ul {
+    max-height: min(12em, 30vh);
+}

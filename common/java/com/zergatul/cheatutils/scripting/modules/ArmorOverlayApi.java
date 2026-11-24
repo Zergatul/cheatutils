@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ArmorOverlayConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.ArmorOverlayConfig;
+import com.zergatul.cheatutils.modules.visuals.ArmorOverlay;
 
-public class ArmorOverlayApi extends ModuleApi<ArmorOverlayConfig> {
-
-    @Override
-    protected ArmorOverlayConfig getConfig() {
-        return ConfigStore.instance.getConfig().armorOverlayConfig;
+public class ArmorOverlayApi extends SettingHandleApi<ArmorOverlayConfig> {
+    public ArmorOverlayApi() {
+        super(ArmorOverlay.INSTANCE.getSettings());
     }
 }

@@ -1,33 +1,22 @@
 package com.zergatul.cheatutils.modules.visuals;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.DeathCoordinatesConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.DeathCoordinatesConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
 public class DeathCoordinates implements Module {
 
     public static final DeathCoordinates INSTANCE = new DeathCoordinates();
 
+    private final SettingHandle<DeathCoordinatesConfig> settings = Settings.get(DeathCoordinatesConfig.class);
+
     private DeathCoordinates() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("death-coordinates", settings, DeathCoordinatesConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<DeathCoordinatesConfig> {
-
-        public WebApi() {
-            super("death-coordinates", DeathCoordinatesConfig.class);
-        }
-
-        @Override
-        protected DeathCoordinatesConfig getConfig() {
-            return ConfigStore.instance.getConfig().deathCoordinatesConfig;
-        }
-
-        @Override
-        protected void setConfig(DeathCoordinatesConfig config) {
-            ConfigStore.instance.getConfig().deathCoordinatesConfig = config;
-        }
+    public SettingHandle<DeathCoordinatesConfig> getSettings() {
+        return settings;
     }
 }

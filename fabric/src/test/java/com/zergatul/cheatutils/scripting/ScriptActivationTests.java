@@ -159,7 +159,7 @@ public class ScriptActivationTests {
                 .setInterface(AsyncRunnable.class)
                 .setAsyncReturnType(SVoidType.instance)
                 .build();
-        var result = new Compiler(parameters).compile("await capture.waitForSignal(); capture.store(() => {});");
+        var result = new Compiler(parameters).compileInstance("await capture.waitForSignal(); capture.store(() => {});");
         assertNotNull(result.getProgram(), () -> String.valueOf(result.getDiagnostics()));
         var script = activation(result.<AsyncRunnable>getProgram());
         CompletableFuture<?> future = script.execute(script.program);
@@ -169,7 +169,7 @@ public class ScriptActivationTests {
         assertTrue(future.isDone());
         assertSame(script, ScriptActivation.findOwner(CaptureRoot.capture.callback));
 
-        var otherResult = new Compiler(parameters).compile("capture.store(() => {});");
+        var otherResult = new Compiler(parameters).compileInstance("capture.store(() => {});");
         assertNotNull(otherResult.getProgram());
         var other = activation(otherResult.<AsyncRunnable>getProgram());
         other.execute(other.program);
@@ -180,7 +180,7 @@ public class ScriptActivationTests {
     public void delayedCallbackFailureStopsOtherCallbacksAndRetirementSkipsThem() throws Exception {
         CaptureRoot.capture = new CaptureApi();
         var parameters = new CompilationParametersBuilder().setRoot(CaptureRoot.class).build();
-        var result = new Compiler(parameters).compile("capture.store(() => capture.crash());");
+        var result = new Compiler(parameters).compileInstance("capture.store(() => capture.crash());");
         assertNotNull(result.getProgram(), () -> String.valueOf(result.getDiagnostics()));
         var script = activation(result.<Runnable>getProgram());
         assertTrue(script.run("initialization", script.program));
@@ -205,7 +205,7 @@ public class ScriptActivationTests {
         for (String name : List.of("onTickStart", "onTickEnd")) {
             var method = InGameTickEndExecutor.class.getDeclaredMethod(name);
             method.setAccessible(true);
-            method.invoke(InGameTickEndExecutor.instance);
+            method.invoke(InGameTickEndExecutor.INSTANCE);
         }
     }
 

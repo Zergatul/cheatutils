@@ -12,17 +12,17 @@ public class SummaryWebApi extends WebApiBase {
 
     @Override
     public String get() throws Throwable {
-        return gson.toJson(Schematica.instance.getSummary());
+        return gson.toJson(Schematica.INSTANCE.getSummary());
     }
 
     @Override
     public String post(String body) throws Throwable {
         PostRequest request = gson.fromJson(body, PostRequest.class);
         if (request.action.equals("rescan")) {
-            Schematica.instance.rescan(request.index);
+            Schematica.INSTANCE.rescan(request.index);
         }
         if (request.action.equals("move")) {
-            Schematica.instance.move(request.index, request.x, request.y, request.z);
+            Schematica.INSTANCE.move(request.index, request.x, request.y, request.z);
         }
         return "{}";
     }
@@ -30,11 +30,11 @@ public class SummaryWebApi extends WebApiBase {
     @Override
     public String delete(String id) throws Throwable {
         if (id.equals("all")) {
-            Schematica.instance.clear();
+            Schematica.INSTANCE.clear();
             return "{}";
         }
 
-        Schematica.instance.remove(Integer.parseInt(id));
+        Schematica.INSTANCE.remove(Integer.parseInt(id));
         return "{}";
     }
 

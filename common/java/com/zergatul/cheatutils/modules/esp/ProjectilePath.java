@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.zergatul.cheatutils.collections.LinesIterable;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ProjectilePathConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ProjectilePathConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.CrossbowItemAccessor;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.render.LineRenderer;
-import com.zergatul.cheatutils.utils.ColorUtils;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.utils.ServerBehavior;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -30,8 +29,9 @@ import java.util.List;
 
 public class ProjectilePath {
 
-    public static final ProjectilePath instance = new ProjectilePath();
+    public static final ProjectilePath INSTANCE = new ProjectilePath();
 
+    private final SettingHandle<ProjectilePathConfig> settings = Settings.get(ProjectilePathConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final List<ThrowableItemEntry> entries = Lists.newArrayList(
             new EnderPearlEntry(),
@@ -49,7 +49,11 @@ public class ProjectilePath {
     private ProjectilePath() {
         Events.AfterRenderWorld.add(this::render);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("projectile-path", settings, ProjectilePathConfig.class);
+    }
+
+    public SettingHandle<ProjectilePathConfig> getSettings() {
+        return settings;
     }
 
     private void render(RenderWorldLastEvent event) {
@@ -62,12 +66,12 @@ public class ProjectilePath {
         }
 
         ProjectilePathConfig config = getConfig();
-        if (!config.enabled) {
+        if (!config.enabled()) {
             traces.clear();
             return;
         }
 
-        if (config.showTraces) {
+        if (config.showTraces()) {
             long time = System.nanoTime();
             for (Entity entity : mc.level.entitiesForRendering()) {
                 if (entity instanceof Projectile) {
@@ -95,7 +99,7 @@ public class ProjectilePath {
             while (iterator.hasNext()) {
                 Map.Entry<Integer, LinkedList<TraceRecord>> entry = iterator.next();
                 LinkedList<TraceRecord> list = entry.getValue();
-                while (!list.isEmpty() && list.getLast().time + config.tracesDuration * 1000000000L < time) {
+                while (!list.isEmpty() && list.getLast().time + config.tracesDuration() * 1000000000L < time) {
                     list.removeLast();
                 }
                 if (list.isEmpty()) {
@@ -110,7 +114,7 @@ public class ProjectilePath {
             double cameraY = cameraPos.y;
             double cameraZ = cameraPos.z;
 
-            LineRenderer renderer = LineRenderer.getInstance();
+            InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
             renderer.begin();
 
             for (List<TraceRecord> list : traces.values()) {
@@ -121,10 +125,10 @@ public class ProjectilePath {
                 for (Pair<TraceRecord, TraceRecord> pair : new LinesIterable<>(list)) {
                     TraceRecord r1 = pair.getFirst();
                     TraceRecord r2 = pair.getSecond();
-                    long remain1 = r1.time + config.tracesDuration * 1000000000L - time;
-                    float alpha1 = Math.min(1f, remain1 / 1e9f / config.fadeDuration);
-                    long remain2 = r2.time + config.tracesDuration * 1000000000L - time;
-                    float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration);
+                    long remain1 = r1.time + config.tracesDuration() * 1000000000L - time;
+                    float alpha1 = Math.min(1f, remain1 / 1e9f / config.fadeDuration());
+                    long remain2 = r2.time + config.tracesDuration() * 1000000000L - time;
+                    float alpha2 = Math.min(1f, remain2 / 1e9f / config.fadeDuration());
                     // original code had 2 colors:
                     // new Color(0.5f, 1f, 0.5f, alpha1)
                     // new Color(0.5f, 1f, 0.5f, alpha2)
@@ -198,7 +202,7 @@ public class ProjectilePath {
         double cameraY = cameraPos.y;
         double cameraZ = cameraPos.z;
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
 
         List<Vec3> mainPath = calculatePath(entry, from, movement, shift);
@@ -213,7 +217,7 @@ public class ProjectilePath {
     }
 
     private ProjectilePathConfig getConfig() {
-        return ConfigStore.instance.getConfig().projectilePathConfig;
+        return settings.get();
     }
 
     private List<Vec3> calculatePath(ThrowableItemEntry entry, Vec3 from, Vec3 speed, Vec3 shift) {
@@ -226,7 +230,7 @@ public class ProjectilePath {
         return list;
     }
 
-    private void drawPath(List<Vec3> path, LineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
+    private void drawPath(List<Vec3> path, InstancedLineRenderer renderer, double cameraX, double cameraY, double cameraZ) {
         for (int i = 0; i < path.size() - 1; i++) {
             Vec3 point1 = path.get(i);
             Vec3 point2 = path.get(i + 1);
@@ -315,7 +319,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            return getConfig().enderPearls && super.shouldDraw();
+            return getConfig().enderPearls() && super.shouldDraw();
         }
     }
 
@@ -327,7 +331,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            return getConfig().snowballs && super.shouldDraw();
+            return getConfig().snowballs() && super.shouldDraw();
         }
     }
 
@@ -339,7 +343,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            return getConfig().eggs && super.shouldDraw();
+            return getConfig().eggs() && super.shouldDraw();
         }
     }
 
@@ -350,7 +354,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            return getConfig().potions && super.shouldDraw();
+            return getConfig().potions() && super.shouldDraw();
         }
 
         @Override
@@ -366,7 +370,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            return getConfig().expBottles && super.shouldDraw();
+            return getConfig().expBottles() && super.shouldDraw();
         }
 
         @Override
@@ -379,7 +383,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            if (!getConfig().bows) {
+            if (!getConfig().bows()) {
                 return false;
             }
 
@@ -428,7 +432,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            if (!getConfig().tridents) {
+            if (!getConfig().tridents()) {
                 return false;
             }
 
@@ -461,7 +465,7 @@ public class ProjectilePath {
 
         @Override
         public boolean shouldDraw() {
-            if (!getConfig().crossbows) {
+            if (!getConfig().crossbows()) {
                 return false;
             }
 
@@ -501,23 +505,6 @@ public class ProjectilePath {
         public TraceRecord(Vec3 position, long time) {
             this.position = position;
             this.time = time;
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ProjectilePathConfig> {
-
-        public WebApi() {
-            super("projectile-path", ProjectilePathConfig.class);
-        }
-
-        @Override
-        protected ProjectilePathConfig getConfig() {
-            return ConfigStore.instance.getConfig().projectilePathConfig;
-        }
-
-        @Override
-        protected void setConfig(ProjectilePathConfig config) {
-            ConfigStore.instance.getConfig().projectilePathConfig = config;
         }
     }
 }

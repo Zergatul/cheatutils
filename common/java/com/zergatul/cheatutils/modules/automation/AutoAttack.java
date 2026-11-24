@@ -1,26 +1,31 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoAttackConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoAttackConfig;
 import com.zergatul.cheatutils.mixins.common.accessors.MinecraftAccessor;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.HitResult;
 
 public class AutoAttack implements Module {
 
-    public static final AutoAttack instance = new AutoAttack();
+    public static final AutoAttack INSTANCE = new AutoAttack();
 
+    private final SettingHandle<AutoAttackConfig> settings = Settings.get(AutoAttackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private int nextExtraTicks = Integer.MIN_VALUE;
 
     private AutoAttack() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-attack", settings, AutoAttackConfig.class);
+    }
+
+    public SettingHandle<AutoAttackConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -28,8 +33,8 @@ public class AutoAttack implements Module {
             return;
         }
 
-        AutoAttackConfig config = ConfigStore.instance.getConfig().autoAttackConfig;
-        if (!config.enabled) {
+        AutoAttackConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -51,7 +56,7 @@ public class AutoAttack implements Module {
             return;
         }
 
-        if (config.limitRange && mc.hitResult.getLocation().distanceToSqr(mc.player.getEyePosition()) > config.maxRange * config.maxRange) {
+        if (config.limitRange() && mc.hitResult.getLocation().distanceToSqr(mc.player.getEyePosition()) > config.maxRange() * config.maxRange()) {
             return;
         }
 
@@ -62,24 +67,7 @@ public class AutoAttack implements Module {
 
     private void calculateNextExtraTicksIfRequired(AutoAttackConfig config) {
         if (nextExtraTicks == Integer.MIN_VALUE) {
-            nextExtraTicks = config.extraTicksMin + (int) Math.floor(Math.random() * (config.extraTicksMax - config.extraTicksMin + 1));
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoAttackConfig> {
-
-        public WebApi() {
-            super("auto-attack", AutoAttackConfig.class);
-        }
-
-        @Override
-        protected AutoAttackConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoAttackConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoAttackConfig config) {
-            ConfigStore.instance.getConfig().autoAttackConfig = config;
+            nextExtraTicks = config.extraTicksMin() + (int) Math.floor(Math.random() * (config.extraTicksMax() - config.extraTicksMin() + 1));
         }
     }
 }

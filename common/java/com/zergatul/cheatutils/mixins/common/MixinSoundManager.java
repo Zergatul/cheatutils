@@ -16,7 +16,7 @@ public abstract class MixinSoundManager {
     @Inject(at = @At("HEAD"), method = "play", cancellable = true)
     private void onPlay(SoundInstance sound, CallbackInfoReturnable<SoundEngine.PlayResult> info) {
         if (sound instanceof ElytraOnPlayerSoundInstance) {
-            if (!ElytraFly.instance.shouldPlaySound()) {
+            if (!ElytraFly.INSTANCE.shouldPlaySound()) {
                 info.cancel();
             }
         }

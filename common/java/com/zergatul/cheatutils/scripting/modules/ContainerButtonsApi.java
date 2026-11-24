@@ -1,65 +1,64 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ContainerButtonsConfig;
-import com.zergatul.cheatutils.controllers.ContainerButtonsController;
+import com.zergatul.cheatutils.configs.modules.ContainerButtonsConfig;
+import com.zergatul.cheatutils.modules.automation.ContainerButtons;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.scripting.MethodDescription;
+
+import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unused")
 public class ContainerButtonsApi {
 
     public boolean isAutoTakeAllEnabled() {
-        return getConfig().autoTakeAll;
+        return getConfig().autoTakeAll();
     }
 
     public boolean isAutoDropAllEnabled() {
-        return getConfig().autoDropAll;
+        return getConfig().autoDropAll();
     }
 
     public boolean isAutoCloseEnabled() {
-        return getConfig().autoClose;
+        return getConfig().autoClose();
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoTakeAll() {
-        ContainerButtonsConfig config = getConfig();
-        config.autoTakeAll = !config.autoTakeAll;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.withAutoTakeAll(!c.autoTakeAll()));
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoDropAll() {
-        ContainerButtonsConfig config = getConfig();
-        config.autoDropAll = !config.autoDropAll;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.withAutoDropAll(!c.autoDropAll()));
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void toggleAutoClose() {
-        ContainerButtonsConfig config = getConfig();
-        config.autoClose = !config.autoClose;
-        ConfigStore.instance.requestWrite();
+        update(c -> c.withAutoClose(!c.autoClose()));
     }
 
     @ApiVisibility(ApiType.ACTION)
     public void dropAll(boolean autoClose) {
-        ContainerButtonsController.instance.dropAll(autoClose);
+        ContainerButtons.INSTANCE.dropAll(autoClose);
     }
 
     @ApiVisibility(ApiType.ACTION)
     public void takeAll(boolean autoClose) {
-        ContainerButtonsController.instance.takeAll(autoClose);
+        ContainerButtons.INSTANCE.takeAll(autoClose);
     }
 
     @MethodDescription("Moves inventory items into the container only when the container already has the same item type.")
     @ApiVisibility(ApiType.ACTION)
     public void smartPut() {
-        ContainerButtonsController.instance.smartPut();
+        ContainerButtons.INSTANCE.smartPut();
+    }
+
+    private void update(UnaryOperator<ContainerButtonsConfig> update) {
+        ContainerButtons.INSTANCE.getSettings().update(update);
     }
 
     private ContainerButtonsConfig getConfig() {
-        return ConfigStore.instance.getConfig().containerButtonsConfig;
+        return ContainerButtons.INSTANCE.getSettings().get();
     }
 }

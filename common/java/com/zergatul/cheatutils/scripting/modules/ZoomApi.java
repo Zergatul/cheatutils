@@ -16,11 +16,11 @@ public class ZoomApi {
         if (seconds > 10) {
             return;
         }
-        Zoom.instance.startZooming(fov, seconds);
+        Zoom.INSTANCE.startZooming(fov, seconds);
     }
 
     @ApiVisibility(ApiType.UPDATE)
     public void stop() {
-        Zoom.instance.stopZooming();
+        Zoom.INSTANCE.stopZooming();
     }
 }

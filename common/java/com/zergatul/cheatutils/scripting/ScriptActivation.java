@@ -2,6 +2,7 @@ package com.zergatul.cheatutils.scripting;
 
 import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.scripting.compiler.DynamicCompilerClassLoader;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
@@ -16,7 +17,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 /** Runtime-only state belonging to one installed program, never to its saved document. */
-public final class ScriptActivation<T> {
+@NullMarked
+public class ScriptActivation<T> {
 
     // Each compilation has its own loader, shared by its program and generated closures.
     // Unlike thread-local ownership, this also works after an async script resumes from await.
@@ -24,8 +26,8 @@ public final class ScriptActivation<T> {
 
     public final T program;
     private final ScriptRef ref;
-    private final AtomicBoolean failed = new AtomicBoolean();
-    private final AtomicReference<CompletableFuture<?>> execution = new AtomicReference<>();
+    private final AtomicBoolean failed;
+    private final AtomicReference<@Nullable CompletableFuture<?>> execution;
     private final Consumer<ScriptActivation<T>> onFailure;
     private final FailureReporter reporter;
 
@@ -34,23 +36,52 @@ public final class ScriptActivation<T> {
     }
 
     public ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure) {
-        this(ref, program, onFailure, ScriptRuntimeFailureHandler.instance::report);
+        this(ref, program, onFailure, ScriptRuntimeFailureHandler.INSTANCE::report);
     }
 
-    ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {
+    protected ScriptActivation(ScriptRef ref, T program, Consumer<ScriptActivation<T>> onFailure, FailureReporter reporter) {
+        this(ref, program, new AtomicBoolean(), new AtomicReference<>(), onFailure, reporter);
+    }
+
+    private ScriptActivation(
+            ScriptRef ref,
+            T program,
+            AtomicBoolean failed,
+            AtomicReference<@Nullable CompletableFuture<?>> execution,
+            Consumer<ScriptActivation<T>> onFailure,
+            FailureReporter reporter
+    ) {
         this.ref = Objects.requireNonNull(ref);
         this.program = Objects.requireNonNull(program);
+        this.failed = Objects.requireNonNull(failed);
+        this.execution = Objects.requireNonNull(execution);
         this.onFailure = Objects.requireNonNull(onFailure);
         this.reporter = Objects.requireNonNull(reporter);
+
         ClassLoader loader = program.getClass().getClassLoader();
         if (loader instanceof DynamicCompilerClassLoader) {
             owners.put(loader, new WeakReference<>(this));
         }
     }
 
+    public ScriptRef getRef() {
+        return ref;
+    }
+
     public static @Nullable ScriptActivation<?> findOwner(Object callback) {
         WeakReference<ScriptActivation<?>> owner = owners.get(callback.getClass().getClassLoader());
         return owner == null ? null : owner.get();
+    }
+
+    /**
+     * False when the callback was compiled as part of another script, including a replaced script whose activation
+     * is already gone. Callbacks not compiled by the script engine are accepted.
+     */
+    public boolean owns(Object callback) {
+        if (!(callback.getClass().getClassLoader() instanceof DynamicCompilerClassLoader)) {
+            return true;
+        }
+        return findOwner(callback) == this;
     }
 
     public boolean isActive() {
@@ -73,6 +104,20 @@ public final class ScriptActivation<T> {
         } catch (Throwable throwable) {
             fail(context, throwable);
             return false;
+        }
+    }
+
+    /** Runs cleanup even after deactivation; reports failures without changing activation state. */
+    public void runCleanup(String context, Runnable action) {
+        try {
+            action.run();
+        } catch (Throwable throwable) {
+            Throwable failure = ScriptRuntimeFailureHandler.unwrapFailure(throwable);
+            if (failure == null) {
+                return;
+            }
+            ScriptRuntimeFailureHandler.rethrowIfFatal(failure);
+            reporter.report(ref, context, failure);
         }
     }
 
@@ -116,6 +161,10 @@ public final class ScriptActivation<T> {
         return future;
     }
 
+    public ScriptActivation<T> withRef(ScriptRef ref) {
+        return new ScriptActivation<>(ref, program, failed, execution, onFailure, reporter);
+    }
+
     private void fail(String context, @Nullable Throwable throwable) {
         Throwable failure = ScriptRuntimeFailureHandler.unwrapFailure(throwable);
         if (failure == null) {
@@ -137,7 +186,7 @@ public final class ScriptActivation<T> {
     }
 
     @FunctionalInterface
-    interface FailureReporter {
+    protected interface FailureReporter {
         void report(ScriptRef ref, String context, Throwable failure);
     }
 }

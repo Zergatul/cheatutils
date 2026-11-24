@@ -2,8 +2,14 @@ package com.zergatul.cheatutils.mixins.common;
 
 import com.mojang.authlib.GameProfile;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.MovementHackConfig;
+import com.zergatul.cheatutils.configs.modules.PrivacyConfig;
+import com.zergatul.cheatutils.configs.modules.ReachConfig;
+import com.zergatul.cheatutils.configs.modules.StepUpConfig;
 import com.zergatul.cheatutils.modules.hacks.ElytraFly;
+import com.zergatul.cheatutils.modules.hacks.Movement;
+import com.zergatul.cheatutils.modules.hacks.Reach;
+import com.zergatul.cheatutils.modules.hacks.StepUp;
 import com.zergatul.cheatutils.modules.scripting.Debugging;
 import com.zergatul.cheatutils.modules.utilities.Privacy;
 import com.zergatul.mixin.ExecuteAfterIfElseCondition;
@@ -74,7 +80,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Inject(at = @At("HEAD"), method = "itemUseSpeedMultiplier", cancellable = true)
     private void onBeforeGetItemUseSpeedMultiplier(CallbackInfoReturnable<Float> info) {
-        if (ConfigStore.instance.getConfig().movementHackConfig.disableSlowdownOnUseItem) {
+        if (Movement.INSTANCE.getSettings().get().disableSlowdownOnUseItem()) {
             info.setReturnValue(1f);
         }
     }
@@ -83,7 +89,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
             method = "modifyInput",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isMovingSlowly()Z"))
     private static boolean onAiStepCrouchCheck(boolean isMovingSlowly) {
-        if (ConfigStore.instance.getConfig().movementHackConfig.disableCrouchingSlowdown) {
+        if (Movement.INSTANCE.getSettings().get().disableCrouchingSlowdown()) {
             return false;
         } else {
             return isMovingSlowly;
@@ -92,13 +98,13 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @ModifyConstant(method = "aiStep()V", constant = @Constant(floatValue = 3.0f))
     private float onModifyFlyingHorizontalMultiplier(float value) {
-        return ElytraFly.instance.onModifyFlyingHorizontalMultiplier(value);
+        return ElytraFly.INSTANCE.onModifyFlyingHorizontalMultiplier(value);
     }
 
     @Override
     public void lerpMotion(@NonNull Vec3 movement) {
-        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
-        if (config.antiKnockback) {
+        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        if (config.antiKnockback()) {
             return;
         }
         super.lerpMotion(movement);
@@ -106,8 +112,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public void push(double dx, double dy, double dz) {
-        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
-        if (config.antiPush) {
+        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        if (config.antiPush()) {
             return;
         }
         super.push(dx, dy, dz);
@@ -115,9 +121,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     protected float getJumpPower() {
-        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
-        if (config.scaleJumpHeight) {
-            return (float) (Math.sqrt(config.jumpHeightFactor) * super.getJumpPower());
+        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        if (config.scaleJumpHeight()) {
+            return (float) (Math.sqrt(config.jumpHeightFactor()) * super.getJumpPower());
         } else {
             return super.getJumpPower();
         }
@@ -130,16 +136,16 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
         MoverType type = args.get(0);
         Vec3 delta = args.get(1);
         if (type == MoverType.SELF) {
-            args.set(1, ElytraFly.instance.onModifyDeltaMove(delta));
+            args.set(1, ElytraFly.INSTANCE.onModifyDeltaMove(delta));
         }
     }
 
     @Inject(at = @At("HEAD"), method = "openTextEdit", cancellable = true)
     private void onOpenTextEdit(SignBlockEntity sign, SignTextSlot slot, CallbackInfo info) {
-        PrivacyConfig config = ConfigStore.instance.getConfig().privacyConfig;
-        Privacy privacy = Privacy.instance;
+        PrivacyConfig config = Privacy.INSTANCE.getSettings().get();
+        Privacy privacy = Privacy.INSTANCE;
 
-        if (config.logTranslationExploitDetails) {
+        if (config.logTranslationExploitDetails()) {
             privacy.forEachExploitable(
                     sign,
                     translatable -> Debugging.INSTANCE.addMessage("Translatable exploit attempt. Key=" + translatable.getKey()),
@@ -161,8 +167,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public boolean isPushedByFluid() {
-        MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
-        if (config.disableWaterPush) {
+        MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+        if (config.disableWaterPush()) {
             return false;
         } else {
             return super.isPushedByFluid();
@@ -171,9 +177,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public double blockInteractionRange() {
-        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
-        if (config.overrideReachDistance) {
-            return config.reachDistance;
+        ReachConfig config = Reach.INSTANCE.getSettings().get();
+        if (config.overrideReachDistance()) {
+            return config.reachDistance();
         } else {
             return super.blockInteractionRange();
         }
@@ -181,9 +187,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public double entityInteractionRange() {
-        ReachConfig config = ConfigStore.instance.getConfig().reachConfig;
-        if (config.overrideAttackRange) {
-            return config.attackRange;
+        ReachConfig config = Reach.INSTANCE.getSettings().get();
+        if (config.overrideAttackRange()) {
+            return config.attackRange();
         } else {
             return super.entityInteractionRange();
         }
@@ -191,9 +197,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 
     @Override
     public float maxUpStep() {
-        StepUpConfig config = ConfigStore.instance.getConfig().stepUp;
-        if (config.enabled) {
-            return (float) config.height;
+        StepUpConfig config = StepUp.INSTANCE.getSettings().get();
+        if (config.enabled()) {
+            return (float) config.height();
         } else {
             return super.maxUpStep();
         }

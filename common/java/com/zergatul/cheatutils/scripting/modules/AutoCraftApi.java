@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.AutoCraftConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.AutoCraftConfig;
+import com.zergatul.cheatutils.modules.automation.AutoCraft;
 
-public class AutoCraftApi extends ModuleApi<AutoCraftConfig> {
-
-    @Override
-    protected AutoCraftConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoCraftConfig;
+public class AutoCraftApi extends SettingHandleApi<AutoCraftConfig> {
+    public AutoCraftApi() {
+        super(AutoCraft.INSTANCE.getSettings());
     }
 }

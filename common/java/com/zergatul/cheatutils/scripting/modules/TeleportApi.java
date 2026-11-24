@@ -20,7 +20,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.teleportToCrosshair(distance);
+        return TeleportHack.INSTANCE.teleportToCrosshair(distance);
     }
 
     @MethodDescription("""
@@ -36,7 +36,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.teleportToCrosshair(distance, packets);
+        return TeleportHack.INSTANCE.teleportToCrosshair(distance, packets);
     }
 
     @MethodDescription("""
@@ -51,7 +51,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.verticalTeleport(distance);
+        return TeleportHack.INSTANCE.verticalTeleport(distance);
     }
 
     @MethodDescription("""
@@ -67,7 +67,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.verticalTeleport(distance, packets);
+        return TeleportHack.INSTANCE.verticalTeleport(distance, packets);
     }
 
     @MethodDescription("""
@@ -82,7 +82,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.verticalTeleport(fromDistance, toDistance, findSurface);
+        return TeleportHack.INSTANCE.verticalTeleport(fromDistance, toDistance, findSurface);
     }
 
     @MethodDescription("""
@@ -98,7 +98,7 @@ public class TeleportApi {
             return false;
         }
 
-        return TeleportHack.instance.verticalTeleport(fromDistance, toDistance, findSurface, packets);
+        return TeleportHack.INSTANCE.verticalTeleport(fromDistance, toDistance, findSurface, packets);
     }
 
     private boolean isInvalidDistance(double distance) {

@@ -1,8 +1,8 @@
 package com.zergatul.cheatutils.scripting.modules;
 
+import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.RegistryExtensions;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.BlockEspEntry;
 import com.zergatul.cheatutils.modules.esp.block.BlockEsp;
 import com.zergatul.cheatutils.modules.esp.block.BlockFinder;
 import com.zergatul.cheatutils.scripting.ApiType;
@@ -13,9 +13,11 @@ import com.zergatul.scripting.MethodDescription;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 @SuppressWarnings("unused")
 public class BlocksApi {
@@ -24,7 +26,7 @@ public class BlocksApi {
             Checks if Block ESP rendering is enabled
             """)
     public boolean isEnabled() {
-        return BlockEsp.instance.isEnabled();
+        return BlockEsp.INSTANCE.isEnabled();
     }
 
     @MethodDescription("""
@@ -32,7 +34,7 @@ public class BlocksApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle() {
-        BlockEsp.instance.toggle();
+        BlockEsp.INSTANCE.toggle();
     }
 
     @MethodDescription("""
@@ -40,8 +42,8 @@ public class BlocksApi {
             If entry is a group entry - only first block from group will be present in the result.
             """)
     public String[] getEntries() {
-        return ConfigStore.instance.getConfig().blocks.getBlockConfigs().stream()
-                .map(c -> c.blocks.stream().findFirst().orElseThrow())
+        return BlockEsp.INSTANCE.getSettings().get().entries().stream()
+                .map(c -> c.blocks().stream().findFirst().orElseThrow())
                 .map(b -> BuiltInRegistries.BLOCK.getKey(b).toString())
                 .toArray(String[]::new);
     }
@@ -50,11 +52,11 @@ public class BlocksApi {
             Checks if block is enabled. If block is part of a group, returns status of this group
             """)
     public boolean isEnabled(String blockId) {
-        BlockEspConfig config = getConfig(blockId);
-        if (config == null) {
+        BlockEspEntry entry = getEntry(blockId);
+        if (entry == null) {
             return false;
         }
-        return config.enabled;
+        return entry.enabled();
     }
 
     @MethodDescription("""
@@ -62,13 +64,7 @@ public class BlocksApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void toggle(String blockId) {
-        BlockEspConfig config = getConfig(blockId);
-        if (config == null) {
-            return;
-        }
-
-        config.enabled = !config.enabled;
-        ConfigStore.instance.requestWrite();
+        update(blockId, e -> e.withEnabled(!e.enabled()));
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -79,13 +75,7 @@ public class BlocksApi {
             return;
         }
 
-        BlockEspConfig config = getConfig(blockId);
-        if (config == null) {
-            return;
-        }
-
-        config.tracerColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        update(blockId, e -> e.withTracerColor(colorValue));
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -96,13 +86,7 @@ public class BlocksApi {
             return;
         }
 
-        BlockEspConfig config = getConfig(blockId);
-        if (config == null) {
-            return;
-        }
-
-        config.boundingBoxColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        update(blockId, e -> e.withBoundingBoxColor(colorValue));
     }
 
     @MethodDescription("Color format: #RRGGBB or #RRGGBBAA.")
@@ -113,13 +97,7 @@ public class BlocksApi {
             return;
         }
 
-        BlockEspConfig config = getConfig(blockId);
-        if (config == null) {
-            return;
-        }
-
-        config.overlayColor = colorValue;
-        ConfigStore.instance.requestWrite();
+        update(blockId, e -> e.withOverlayColor(colorValue));
     }
 
     @MethodDescription("""
@@ -127,7 +105,7 @@ public class BlocksApi {
             """)
     @ApiVisibility(ApiType.UPDATE)
     public void rescan() {
-        BlockFinder.instance.rescan();
+        BlockFinder.INSTANCE.rescan();
     }
 
     @MethodDescription("""
@@ -139,17 +117,20 @@ public class BlocksApi {
             return Integer.MIN_VALUE;
         }
 
-        BlockEspConfig config = ConfigStore.instance.getConfig().blocks.find(block);
-        if (config == null) {
+        BlockEspEntry entry = getEntry(blockId);
+        if (entry == null) {
             return 0;
         }
 
-        Set<BlockPos> set = BlockFinder.instance.blocks.get(config);
-        if (set == null) {
-            return 0;
-        } else {
-            return set.size();
+        int total = 0;
+        for (Block b : entry.blocks()) {
+            Set<BlockPos> positions = BlockFinder.INSTANCE.getPositons(b);
+            if (positions != null) {
+                total += positions.size();
+            }
         }
+
+        return total;
     }
 
     @MethodDescription("""
@@ -165,14 +146,14 @@ public class BlocksApi {
             Black list is not persistent and it is cleared when you restart Minecraft.
             """)
     public void addBlackList(int x, int y, int z) {
-        BlockFinder.instance.addBlackList(new BlockPos(x, y, z));
+        BlockFinder.INSTANCE.addBlackList(new BlockPos(x, y, z));
     }
 
     @MethodDescription("""
             Clears black list with block coordinates. This action does not re-add blocks that match Block ESP conditions at these coordinates.
             """)
     public void clearBlackList() {
-        BlockFinder.instance.blackList.clear();
+        BlockFinder.INSTANCE.clearBlackList();
     }
 
     @MethodDescription("""
@@ -188,7 +169,7 @@ public class BlocksApi {
     public void addCustom(int x, int y, int z, String color) {
         Integer colorInt = ColorUtils.parseColor(color);
         if (colorInt != null) {
-            BlockEsp.instance.addCustom(new BlockPos(x, y, z), colorInt);
+            BlockEsp.INSTANCE.addCustom(new BlockPos(x, y, z), colorInt);
         }
     }
 
@@ -203,22 +184,41 @@ public class BlocksApi {
             Removes specified custom block position from ESP.
             """)
     public void removeCustom(int x, int y, int z) {
-        BlockEsp.instance.removeCustom(new BlockPos(x, y, z));
+        BlockEsp.INSTANCE.removeCustom(new BlockPos(x, y, z));
     }
 
     @MethodDescription("""
             Removes all custom block positions.
             """)
     public void clearCustom() {
-        BlockEsp.instance.clearCustom();
+        BlockEsp.INSTANCE.clearCustom();
     }
 
-    private BlockEspConfig getConfig(String blockId) {
+    private void update(String blockId, UnaryOperator<BlockEspEntry> map) {
+        BlockEsp.INSTANCE.getSettings().update(config -> {
+            BlockEspEntry entry = getEntry(config.entries(), blockId);
+            if (entry == null) {
+                return config;
+            }
+
+            ImmutableList<BlockEspEntry> newEntries = config.entries().replaceFirst(e -> e == entry, map);
+            return config.withEntries(newEntries);
+        });
+    }
+
+    private @Nullable BlockEspEntry getEntry(String blockId) {
+        return getEntry(BlockEsp.INSTANCE.getSettings().get().entries(), blockId);
+    }
+
+    private @Nullable BlockEspEntry getEntry(ImmutableList<BlockEspEntry> entries, String blockId) {
         Block block = RegistryExtensions.safeParse(BuiltInRegistries.BLOCK, blockId);
         if (block == null) {
             return null;
         }
 
-        return ConfigStore.instance.getConfig().blocks.find(block);
+        return entries.stream()
+                .filter(e -> e.blocks().contains(block))
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -1,33 +1,21 @@
 package com.zergatul.cheatutils.modules.automation;
 
-import com.zergatul.cheatutils.configs.AutoDropConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoDropConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 
 public class AutoDrop implements Module {
 
     public static final AutoDrop INSTANCE = new AutoDrop();
 
+    private final SettingHandle<AutoDropConfig> settings = Settings.get(AutoDropConfig.class);
     private AutoDrop() {
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-drop", settings, AutoDropConfig.class);
     }
 
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoDropConfig> {
-
-        public WebApi() {
-            super("auto-drop", AutoDropConfig.class);
-        }
-
-        @Override
-        protected AutoDropConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoDropConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoDropConfig config) {
-            ConfigStore.instance.getConfig().autoDropConfig = config;
-        }
+    public SettingHandle<AutoDropConfig> getSettings() {
+        return settings;
     }
 }

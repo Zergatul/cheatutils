@@ -21,11 +21,11 @@ public abstract class MixinClientboundPlayerInfoUpdatePacket {
 
     @Inject(at = @At("HEAD"), method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V")
     private void onBeforeHandle(ClientGamePacketListener listener, CallbackInfo info) {
-        PlayerInfoController.instance.onBeforeUpdate(this.entries.stream().map(ClientboundPlayerInfoUpdatePacket.Entry::profileId));
+        PlayerInfoController.INSTANCE.onBeforeUpdate(this.entries.stream().map(ClientboundPlayerInfoUpdatePacket.Entry::profileId));
     }
 
     @Inject(at = @At("TAIL"), method = "handle(Lnet/minecraft/network/protocol/game/ClientGamePacketListener;)V")
     private void onAfterHandle(ClientGamePacketListener listener, CallbackInfo ci) {
-        PlayerInfoController.instance.onAfterUpdate();
+        PlayerInfoController.INSTANCE.onAfterUpdate();
     }
 }

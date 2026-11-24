@@ -24,7 +24,7 @@ public abstract class TagWrapper {
 
     static TagWrapper from(Tag tag) {
         if (tag == null) {
-            return MissingTagWrapper.instance;
+            return MissingTagWrapper.INSTANCE;
         }
 
         return switch (tag.getId()) {
@@ -40,7 +40,7 @@ public abstract class TagWrapper {
             case Tag.TAG_COMPOUND -> new CompoundTagWrapper((CompoundTag) tag);
             case Tag.TAG_INT_ARRAY -> new IntArrayTagWrapper((IntArrayTag) tag);
             case Tag.TAG_LONG_ARRAY -> new LongArrayTagWrapper((LongArrayTag) tag);
-            default -> MissingTagWrapper.instance;
+            default -> MissingTagWrapper.INSTANCE;
         };
     }
 }

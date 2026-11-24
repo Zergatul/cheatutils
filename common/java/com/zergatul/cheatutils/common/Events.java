@@ -14,15 +14,27 @@ import org.joml.Vector2ic;
 
 import java.util.function.Consumer;
 
+/**
+ * Adding event handler accepts priority. Handlers run in ascending priority order.
+ */
 public class Events {
     // to better understand sequence of events they are ordered in trigger order
 
-    // called once during loading
-    public static final ParameterizedEventHandler<IKeyBindingRegistry> RegisterKeyBindings = new ParameterizedEventHandler<>();
+    // client thread, outside the config store lock: after a profile was published (including the initial one at the first client tick)
+    public static final SimpleEventHandler ProfileLoaded = new SimpleEventHandler();
 
     // Minecraft.runTick() : begin
     public static final SimpleEventHandler BeforeProcessQueuedPackets = new SimpleEventHandler();
     // PacketProcessor.processQueuedPackets() : begin
+
+    // not all packets are handled from client thread
+    // some non-essential system packets are handled from Netty thread
+    // examples:
+    // - login handshake packets
+    // - ClientboundKeepAlivePacket
+    // - ClientboundChunkBatchFinishedPacket
+    public static final S2CPacketEventHandler BeforeHandlePacketClientThread = new S2CPacketEventHandler();
+
     public static final ParameterizedEventHandler<Entity> EntityAdded = new ParameterizedEventHandler<>();
     public static final ParameterizedEventHandler<Entity> EntityRemoved = new ParameterizedEventHandler<>();
     // PacketProcessor.processQueuedPackets() : end
@@ -31,6 +43,7 @@ public class Events {
     public static final SimpleEventHandler ClientTickStart = new SimpleEventHandler();
     public static final SimpleEventHandler InGameTickStart = new SimpleEventHandler();
     // GameRenderer.pick(1)
+    public static final SimpleEventHandler RenderStateExtractStart = new SimpleEventHandler();
     public static final ParameterizedEventHandler<DeltaTracker> RenderTickStart = new ParameterizedEventHandler<>();
     // GameRenderer.pick(partial)
     public static final CancelableEventHandler<SimpleCancellableEvent> ModifyFieldOfViewAnimation = new CancelableEventHandler<>();
@@ -62,6 +75,20 @@ public class Events {
     public static final SimpleEventHandler InGameTickEnd = new SimpleEventHandler();
 
     public static final SimpleEventHandler RenderBuffersCleanUp = new SimpleEventHandler();
+
+    // can be triggered from almost any place
+    // this event runs only from main thread
+    // although some events are getting sent from Netty thread, they are mostly system-level events
+    // and are not particularly interesting by most modules
+    // examples:
+    // - login handshake packets
+    // - ServerboundKeepAlivePacket
+    // - ServerboundChunkBatchReceivedPacket
+    public static final C2SPacketEventHandler BeforeSendPacketClientThread = new C2SPacketEventHandler();
+
+    // processes all packets in Netty thread
+    // runs after BeforeSendPacketClientThread
+    //public static final LitePacketEventHandler BeforeSendPacketNettyThread = new LitePacketEventHandler();
 
     // runs after each frame rendered, close to the main game loop
     public static final SimpleEventHandler MainLoopFrameEnd = new SimpleEventHandler();

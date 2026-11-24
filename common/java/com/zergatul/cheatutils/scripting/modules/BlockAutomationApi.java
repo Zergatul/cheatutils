@@ -1,8 +1,7 @@
 package com.zergatul.cheatutils.scripting.modules;
 
 import com.zergatul.cheatutils.common.RegistryExtensions;
-import com.zergatul.cheatutils.configs.BlockAutomationConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.BlockAutomationConfig;
 import com.zergatul.cheatutils.modules.scripting.BlockAutomation;
 import com.zergatul.cheatutils.scripting.ApiType;
 import com.zergatul.cheatutils.scripting.ApiVisibility;
@@ -16,13 +15,17 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 
 @SuppressWarnings("unused")
-public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
+public class BlockAutomationApi extends SettingHandleApi<BlockAutomationConfig> {
+
+    public BlockAutomationApi() {
+        super(BlockAutomation.INSTANCE.getSettings());
+    }
 
     @MethodDescription("""
             For debugging
             """)
     public void useOne() {
-        BlockAutomation.instance.placeOne();
+        BlockAutomation.INSTANCE.placeOne();
     }
 
     @MethodDescription("""
@@ -32,7 +35,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     public void useItem(String itemId) {
         Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
-            BlockAutomation.instance.useItem(stack -> stack.is(item), BlockPlacingMethod.ANY);
+            BlockAutomation.INSTANCE.useItem(stack -> stack.is(item), BlockPlacingMethod.ANY);
         }
     }
 
@@ -57,7 +60,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     public void useItem(String itemId, String method) {
         Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
-            BlockAutomation.instance.useItem(stack -> stack.is(item), BlockPlacingMethod.parse(method));
+            BlockAutomation.INSTANCE.useItem(stack -> stack.is(item), BlockPlacingMethod.parse(method));
         }
     }
 
@@ -80,29 +83,29 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useItem(ItemStackPredicate predicate, String method) {
-        BlockAutomation.instance.useItem(stack -> predicate.test(new ItemStackWrapper(stack)), BlockPlacingMethod.parse(method));
+        BlockAutomation.INSTANCE.useItem(stack -> predicate.test(new ItemStackWrapper(stack)), BlockPlacingMethod.parse(method));
     }
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithMainHand() {
-        BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.ANY);
+        BlockAutomation.INSTANCE.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.ANY);
     }
 
     @MethodDescription("Uses the main-hand item at current coordinates. See useItem(..., method) for allowed method values.")
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithMainHand(String method) {
-        BlockAutomation.instance.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.parse(method));
+        BlockAutomation.INSTANCE.useItem(InteractionHand.MAIN_HAND, BlockPlacingMethod.parse(method));
     }
 
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithOffHand() {
-        BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.ANY);
+        BlockAutomation.INSTANCE.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.ANY);
     }
 
     @MethodDescription("Uses the off-hand item at current coordinates. See useItem(..., method) for allowed method values.")
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void useWithOffHand(String method) {
-        BlockAutomation.instance.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.parse(method));
+        BlockAutomation.INSTANCE.useItem(InteractionHand.OFF_HAND, BlockPlacingMethod.parse(method));
     }
 
     @MethodDescription("""
@@ -110,7 +113,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock() {
-        BlockAutomation.instance.breakBlock(stack -> true);
+        BlockAutomation.INSTANCE.breakBlock(stack -> true);
     }
 
     @MethodDescription("""
@@ -120,7 +123,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
     public void breakBlock(String itemId) {
         Item item = RegistryExtensions.safeParse(BuiltInRegistries.ITEM, itemId);
         if (item != null) {
-            BlockAutomation.instance.breakBlock(stack -> stack.is(item));
+            BlockAutomation.INSTANCE.breakBlock(stack -> stack.is(item));
         }
     }
 
@@ -133,7 +136,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
         if (item != null) {
             Identifier enchantment = Identifier.tryParse(enchantmentId);
             if (enchantment != null) {
-                BlockAutomation.instance.breakBlock(stack -> {
+                BlockAutomation.INSTANCE.breakBlock(stack -> {
                     if (!stack.is(item)) {
                         return false;
                     }
@@ -148,7 +151,7 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlock(ItemStackPredicate predicate) {
-        BlockAutomation.instance.breakBlock(stack -> predicate.test(new ItemStackWrapper(stack)));
+        BlockAutomation.INSTANCE.breakBlock(stack -> predicate.test(new ItemStackWrapper(stack)));
     }
 
     @MethodDescription("""
@@ -157,11 +160,6 @@ public class BlockAutomationApi extends ModuleApi<BlockAutomationConfig> {
             """)
     @ApiVisibility(ApiType.BLOCK_AUTOMATION)
     public void breakBlockAutoTool() {
-        BlockAutomation.instance.breakBlockAutoTool();
-    }
-
-    @Override
-    protected BlockAutomationConfig getConfig() {
-        return ConfigStore.instance.getConfig().blockAutomationConfig;
+        BlockAutomation.INSTANCE.breakBlockAutoTool();
     }
 }

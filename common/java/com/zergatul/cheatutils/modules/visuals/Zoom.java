@@ -6,7 +6,7 @@ import com.zergatul.cheatutils.modules.Module;
 
 public class Zoom implements Module {
 
-    public static final Zoom instance = new Zoom();
+    public static final Zoom INSTANCE = new Zoom();
 
     private State state;
     private long begin;

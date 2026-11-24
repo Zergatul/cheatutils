@@ -16,6 +16,6 @@ public abstract class MixinEntityHitboxDebugRenderer {
             method = "showHitboxes",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getBoundingBox()Lnet/minecraft/world/phys/AABB;"))
     private AABB onModifyRenderedHitbox(AABB original, @Local(name = "entity") Entity entity) {
-        return HitboxSize.instance.get(entity);
+        return HitboxSize.INSTANCE.get(entity);
     }
 }

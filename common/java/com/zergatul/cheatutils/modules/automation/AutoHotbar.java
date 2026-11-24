@@ -1,12 +1,12 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.AutoHotbarConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoHotbarConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.InventorySlot;
 import com.zergatul.cheatutils.utils.InventoryUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -15,8 +15,9 @@ import net.minecraft.world.item.ItemStack;
 
 public class AutoHotbar implements Module {
 
-    public static final AutoHotbar instance = new AutoHotbar();
+    public static final AutoHotbar INSTANCE = new AutoHotbar();
 
+    private final SettingHandle<AutoHotbarConfig> settings = Settings.get(AutoHotbarConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ItemStack[] lastTickHotbar = new ItemStack[9];
     private ItemStack lastTickOffhand;
@@ -24,9 +25,13 @@ public class AutoHotbar implements Module {
     private AutoHotbar() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-hotbar", settings, AutoHotbarConfig.class);
 
         clear();
+    }
+
+    public SettingHandle<AutoHotbarConfig> getSettings() {
+        return settings;
     }
 
     private void onClientTickEnd() {
@@ -35,8 +40,8 @@ public class AutoHotbar implements Module {
             return;
         }
 
-        AutoHotbarConfig config = ConfigStore.instance.getConfig().autoHotbarConfig;
-        if (!config.enabled) {
+        AutoHotbarConfig config = settings.get();
+        if (!config.enabled()) {
             clear();
             return;
         }
@@ -57,7 +62,7 @@ public class AutoHotbar implements Module {
             }
         }
 
-        if (config.refillSlotOffhand && !lastTickOffhand.isEmpty()) {
+        if (config.refillSlotOffhand() && !lastTickOffhand.isEmpty()) {
             if (shouldRefill(lastTickOffhand, mc.player.getOffhandItem())) {
                 int slot = findSameItem(inventory, lastTickOffhand);
                 if (slot > 0) {
@@ -96,22 +101,5 @@ public class AutoHotbar implements Module {
         }
 
         return -1;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoHotbarConfig> {
-
-        public WebApi() {
-            super("auto-hotbar", AutoHotbarConfig.class);
-        }
-
-        @Override
-        protected AutoHotbarConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoHotbarConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoHotbarConfig config) {
-            ConfigStore.instance.getConfig().autoHotbarConfig = config;
-        }
     }
 }

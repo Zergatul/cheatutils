@@ -4,14 +4,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.zergatul.cheatutils.configs.McpServerConfig;
+import com.zergatul.cheatutils.configs.modules.McpServerConfig;
 import com.zergatul.cheatutils.mcp.McpItemStatus;
 import com.zergatul.cheatutils.mcp.utility.JsonObjectBuilder;
 import com.zergatul.cheatutils.mcp.utility.Serializer;
 import com.zergatul.cheatutils.scripting.Root;
 import com.zergatul.cheatutils.scripting.ScriptCompilerRegistry;
 import com.zergatul.cheatutils.scripting.ScriptType;
-import com.zergatul.scripting.compiler.CompilationResult;
+import com.zergatul.cheatutils.scripting.ScriptInitializationException;
+import com.zergatul.scripting.compiler.ClassCompilationResult;
 import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
@@ -129,7 +130,7 @@ public class ExecCodeTool implements McpTool {
             return status;
         }
 
-        if (!config.allowExecutingCode) {
+        if (!config.allowExecutingCode()) {
             return McpItemStatus.disabled("Disabled by CheatUtils MCP Server settings: allowExecutingCode is false.");
         }
 
@@ -147,9 +148,8 @@ public class ExecCodeTool implements McpTool {
             return McpToolCallResult.error("Invalid arguments: expected string property 'code'.");
         }
 
-        CompilationResult compileResult = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EXEC_CODE, codeElement.getAsString());
-        Runnable program = compileResult.getProgram();
-        if (program == null) {
+        ClassCompilationResult compileResult = ScriptCompilerRegistry.INSTANCE.compile(ScriptType.EXEC_CODE, codeElement.getAsString());
+        if (!compileResult.isSuccess()) {
             return McpToolCallResult.success(new JsonObjectBuilder()
                     .withProperty("ok", false)
                     .withProperty("diagnostics", Serializer.serialize(compileResult.getDiagnostics()))
@@ -158,7 +158,7 @@ public class ExecCodeTool implements McpTool {
 
         ExecutionResult result;
         try {
-            result = execute(program);
+            result = execute(compileResult);
         } catch (IllegalStateException e) {
             return McpToolCallResult.error(e.getMessage());
         }
@@ -173,15 +173,19 @@ public class ExecCodeTool implements McpTool {
         return McpToolCallResult.success(builder.build());
     }
 
-    private ExecutionResult execute(Runnable program) {
+    private ExecutionResult execute(ClassCompilationResult compilation) {
         CompletableFuture<ExecutionResult> future = new CompletableFuture<>();
 
         try {
             Minecraft.getInstance().execute(() -> {
                 Root.executionLog.clear();
                 try {
+                    // static initializers are script code too, so they run here on the client thread
+                    Runnable program = ScriptCompilerRegistry.instantiate(compilation);
                     program.run();
                     future.complete(new ExecutionResult(true, Root.executionLog.getRecords(), null));
+                } catch (ScriptInitializationException e) {
+                    future.complete(new ExecutionResult(false, Root.executionLog.getRecords(), formatError(e.getCause())));
                 } catch (Throwable e) {
                     future.complete(new ExecutionResult(false, Root.executionLog.getRecords(), formatError(e)));
                 }

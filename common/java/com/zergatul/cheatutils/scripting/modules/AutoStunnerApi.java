@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.AutoStunnerConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.AutoStunnerConfig;
+import com.zergatul.cheatutils.modules.automation.AutoStunner;
 
-public class AutoStunnerApi extends ModuleApi<AutoStunnerConfig> {
-
-    @Override
-    protected AutoStunnerConfig getConfig() {
-        return ConfigStore.instance.getConfig().autoStunnerConfig;
+public class AutoStunnerApi extends SettingHandleApi<AutoStunnerConfig> {
+    public AutoStunnerApi() {
+        super(AutoStunner.INSTANCE.getSettings());
     }
 }

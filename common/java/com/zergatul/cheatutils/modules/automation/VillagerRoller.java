@@ -3,9 +3,10 @@ package com.zergatul.cheatutils.modules.automation;
 import com.zergatul.cheatutils.blocks.*;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.VillagerRollerConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.concurrent.ClientThread;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.VillagerRollerConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.scripting.ScriptActivation;
 import com.zergatul.cheatutils.scripting.ScriptType;
@@ -13,8 +14,8 @@ import com.zergatul.cheatutils.scripting.workspace.ScriptRef;
 import com.zergatul.cheatutils.utils.EntityInteraction;
 import com.zergatul.cheatutils.utils.EntityInteractionPlan;
 import com.zergatul.cheatutils.utils.EntityInteractionResult;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.CodeWebApiBase;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
@@ -23,6 +24,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -39,19 +42,23 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.block.Blocks;
 
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class VillagerRoller implements Module {
 
-    public static final VillagerRoller instance = new VillagerRoller();
+    public static final VillagerRoller INSTANCE = new VillagerRoller();
 
+    private final SettingHandle<VillagerRollerConfig> settings = Settings.get(VillagerRollerConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
+    // all state below belongs to the client thread
+    private ScriptActivation<Runnable> script;
     private boolean active;
     private State state = State.STOPPED;
-    private volatile BlockPos pos;
-    private volatile boolean lecternPlaced;
-    private volatile boolean lecternDestroyed;
-    private volatile MerchantOffers offers;
+    private BlockPos pos;
+    private boolean lecternPlaced;
+    private boolean lecternDestroyed;
+    private MerchantOffers offers;
     private CompletableFuture<Void> applyFuture;
     private CompletableFuture<EntityInteractionResult> interactFuture;
     private int villagerId;
@@ -65,18 +72,21 @@ public class VillagerRoller implements Module {
     private int maxLevel;
     private int minPrice;
     private int maxPrice;
-    private volatile ScriptActivation<Runnable> script;
 
     private VillagerRoller() {
         Events.InGameTickEnd.add(this::onClientTickEnd);
         Events.RawBlockUpdated.add(this::onBlockChanged);
         Events.EntityInteract.add(this::onEntityInteract);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.ClientPlayerLoggingOut.add(this::onPlayerLoggingOut);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
 
         WebApiRegistry.INSTANCE.register(new ConfigWebApi());
         WebApiRegistry.INSTANCE.register(new StatusWebApi());
         WebApiRegistry.INSTANCE.register(new CodeWebApi());
+    }
+
+    public SettingHandle<VillagerRollerConfig> getSettings() {
+        return settings;
     }
 
     public boolean isActive() {
@@ -84,6 +94,7 @@ public class VillagerRoller implements Module {
     }
 
     public void start() {
+        ScriptActivation<Runnable> script = this.script;
         if (script != null && !script.isActive()) {
             stopReason = "Script failed; save it to re-enable";
             return;
@@ -125,6 +136,7 @@ public class VillagerRoller implements Module {
     }
 
     public void setScript(Runnable script) {
+        ClientThread.assertCurrent();
         ScriptActivation<Runnable> previous = this.script;
         if (previous != null) {
             previous.deactivate();
@@ -391,22 +403,26 @@ public class VillagerRoller implements Module {
         }
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
         if (!active) {
-            return;
+            return true;
         }
 
-        if (args.packet instanceof ClientboundOpenScreenPacket packet) {
-            if (packet.getType() == MenuType.MERCHANT) {
-                args.skip = true;
+        if (packet instanceof ClientboundOpenScreenPacket openScreenPacket) {
+            if (openScreenPacket.getType() == MenuType.MERCHANT) {
+                return false;
             }
         }
 
-        if (args.packet instanceof ClientboundMerchantOffersPacket packet) {
-            args.skip = true;
-            offers = packet.getOffers();
-            NetworkPacketsController.instance.sendPacket(new ServerboundContainerClosePacket(packet.getContainerId()));
+        if (packet instanceof ClientboundMerchantOffersPacket merchantOffersPacket) {
+            offers = merchantOffersPacket.getOffers();
+            PacketUtils.send(
+                    Objects.requireNonNull(mc.player),
+                    new ServerboundContainerClosePacket(merchantOffersPacket.getContainerId()));
+            return true;
         }
+
+        return true;
     }
 
     private void onBlockChanged(BlockUpdateEvent event) {
@@ -450,7 +466,7 @@ public class VillagerRoller implements Module {
     }
 
     private VillagerRollerConfig getConfig() {
-        return ConfigStore.instance.getConfig().villagerRollerConfig;
+        return settings.get();
     }
 
     private enum State {
@@ -468,21 +484,25 @@ public class VillagerRoller implements Module {
         WAITING_FOR_LECTERN_BREAK
     }
 
-    private static final class ConfigWebApi extends SimpleModuleConfigWebApi<VillagerRollerConfig> {
+    private class ConfigWebApi extends WebApiBase {
 
-        public ConfigWebApi() {
-            super("villager-roller", VillagerRollerConfig.class);
+        @Override
+        public String getRoute() {
+            return "villager-roller";
         }
 
         @Override
-        protected VillagerRollerConfig getConfig() {
-            return ConfigStore.instance.getConfig().villagerRollerConfig;
+        public String get() {
+            return gson.toJson(settings.get());
         }
 
         @Override
-        protected void setConfig(VillagerRollerConfig config) {
-            VillagerRollerConfig current = ConfigStore.instance.getConfig().villagerRollerConfig;
-            config.copyTo(current);
+        public String post(String body) {
+            VillagerRollerConfig.UpdateOptions options = gson.fromJson(body, VillagerRollerConfig.UpdateOptions.class);
+            if (options != null) {
+                settings.update(config -> config.withOptions(options));
+            }
+            return get();
         }
     }
 
@@ -496,12 +516,14 @@ public class VillagerRoller implements Module {
         @Override
         public String post(String body) {
             Request request = gson.fromJson(body, Request.class);
-            if (request.start) {
-                VillagerRoller.this.start();
-            }
-            if (request.stop) {
-                VillagerRoller.this.stop();
-            }
+            ClientThread.run(() -> {
+                if (request.start) {
+                    VillagerRoller.this.start();
+                }
+                if (request.stop) {
+                    VillagerRoller.this.stop();
+                }
+            });
             return "{}";
         }
 

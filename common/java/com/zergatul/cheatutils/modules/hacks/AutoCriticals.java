@@ -2,32 +2,38 @@ package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.BeforeAttackEvent;
-import com.zergatul.cheatutils.configs.AutoCriticalsConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.AutoCriticalsConfig;
+import com.zergatul.cheatutils.modules.Module;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
-public class AutoCriticals {
+public class AutoCriticals implements Module {
 
-    public static final AutoCriticals instance = new AutoCriticals();
+    public static final AutoCriticals INSTANCE = new AutoCriticals();
 
+    private final SettingHandle<AutoCriticalsConfig> settings = Settings.get(AutoCriticalsConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
 
     private AutoCriticals() {
         Events.BeforeAttack.add(this::onBeforeAttack, -1);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("auto-criticals", settings, AutoCriticalsConfig.class);
+    }
+
+    public SettingHandle<AutoCriticalsConfig> getSettings() {
+        return settings;
     }
 
     private void onBeforeAttack(BeforeAttackEvent event) {
-        AutoCriticalsConfig config = ConfigStore.instance.getConfig().autoCriticalsConfig;
+        AutoCriticalsConfig config = settings.get();
 
-        if (config.enabled) {
+        if (config.enabled()) {
             if (mc.level == null) {
                 return;
             }
@@ -52,32 +58,16 @@ public class AutoCriticals {
 
             Vec3 PrevPos = mc.player.position();
 
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<AutoCriticalsConfig> {
-
-        public WebApi() {
-            super("auto-criticals", AutoCriticalsConfig.class);
-        }
-
-        @Override
-        protected AutoCriticalsConfig getConfig() {
-            return ConfigStore.instance.getConfig().autoCriticalsConfig;
-        }
-
-        @Override
-        protected void setConfig(AutoCriticalsConfig config) {
-            ConfigStore.instance.getConfig().autoCriticalsConfig = config;
+            PacketUtils.send(mc.player,
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 0.0625D, PrevPos.z, true, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y + 1.1E-5D, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket(),
+                new ServerboundMovePlayerPacket.Pos(PrevPos.x, PrevPos.y, PrevPos.z, false, false),
+                new ServerboundClientTickEndPacket());
         }
     }
 }

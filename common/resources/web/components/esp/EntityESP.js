@@ -10,7 +10,7 @@ const { ref } = await FallbackLoader.vue();
 
 const entityInfoPromise = http.get('/api/entity-info').then(entitiesList => {
     const entitiesMap = {};
-    entitiesList.forEach(e => entitiesMap[e.clazz] = e);
+    entitiesList.forEach(e => entitiesMap[e.type] = e);
     return {
         entitiesList: entitiesList,
         entitiesMap: entitiesMap
@@ -40,10 +40,10 @@ export function createComponent(template) {
                 (entity, query) => entity.simpleName && entity.simpleName.toLocaleLowerCase().indexOf(query) > 0,
                 (entity, query) => entity.id && entity.id.indexOf(query) == 0,
                 (entity, query) => entity.id && entity.id.indexOf(query) > 0,
-                (entity, query) => entity.baseClasses && entity.baseClasses.some(clazz => clazz.toLocaleLowerCase().indexOf(query) == 0),
-                (entity, query) => entity.baseClasses && entity.baseClasses.some(clazz => clazz.toLocaleLowerCase().indexOf(query) > 0),
-                (entity, query) => entity.interfaces && entity.interfaces.some(iface => iface.toLocaleLowerCase().indexOf(query) == 0),
-                (entity, query) => entity.interfaces && entity.interfaces.some(iface => iface.toLocaleLowerCase().indexOf(query) > 0),
+                (entity, query) => entity.baseClasses && entity.baseClasses.some(type => type.toLocaleLowerCase().indexOf(query) == 0),
+                (entity, query) => entity.baseClasses && entity.baseClasses.some(type => type.toLocaleLowerCase().indexOf(query) > 0),
+                (entity, query) => entity.interfaces && entity.interfaces.some(type => type.toLocaleLowerCase().indexOf(query) == 0),
+                (entity, query) => entity.interfaces && entity.interfaces.some(type => type.toLocaleLowerCase().indexOf(query) > 0),
             ]);
 
             const restartSearch = useIncrementalSearch({
@@ -59,9 +59,9 @@ export function createComponent(template) {
             };
 
             const moveDown = (config) => {
-                http.post('/api/entities-move', {
+                http.post('/api/entity-esp-move', {
                     direction: 'down',
-                    clazz: config.clazz
+                    type: config.type
                 }).then(response => {
                     response = response;
                     if (!response.ok) {
@@ -73,9 +73,9 @@ export function createComponent(template) {
             };
 
             const moveUp = (config) => {
-                http.post('/api/entities-move', {
+                http.post('/api/entity-esp-move', {
                     direction: 'up',
-                    clazz: config.clazz
+                    type: config.type
                 }).then(response => {
                     if (!response.ok) {
                         alert(response.message);
@@ -91,21 +91,21 @@ export function createComponent(template) {
                 restartSearch();
             };
 
-            const openEdit = (clazz) => {
+            const openEdit = (type) => {
                 state.value = 'edit';
                 const setupCode = () => {
                     code.value = selectedConfig.value.code || '';
                     showRefs.value = false;
                 };
-                if (entitiesConfigMap.value[clazz]) {
-                    selectedConfig.value = entitiesConfigMap.value[clazz];
+                if (entitiesConfigMap.value[type]) {
+                    selectedConfig.value = entitiesConfigMap.value[type];
                     setupCode();
                 } else {
                     selectedConfig.value = null;
-                    http.post('/api/entities', { clazz: clazz }).then(response => {
+                    http.post('/api/entity-esp', { type: type }).then(response => {
                         selectedConfig.value = response;
                         entitiesConfigList.value.push(response);
-                        entitiesConfigMap.value[clazz] = response;
+                        entitiesConfigMap.value[type] = response;
                         setupCode();
                     });
                 }
@@ -113,26 +113,26 @@ export function createComponent(template) {
 
             const remove = () => {
                 if (selectedConfig.value) {
-                    http.delete('/api/entities/' + selectedConfig.value.clazz).then(() => {
-                        const clazz = selectedConfig.value.clazz;
+                    http.delete('/api/entity-esp/' + selectedConfig.value.type).then(() => {
+                        const type = selectedConfig.value.type;
                         const index = entitiesConfigList.value.indexOf(selectedConfig.value);
                         if (index >= 0) {
                             entitiesConfigList.value.splice(index, 1);
                         }
                         selectedConfig.value = null;
-                        delete entitiesConfigMap.value[clazz];
+                        delete entitiesConfigMap.value[type];
                         backToList();
                     });
                 }
             };
 
-            const removeByClass = (clazz) => {
-                http.delete('/api/entities/' + clazz).then(() => {
-                    const index = entitiesConfigList.value.findIndex(e => e.clazz == clazz);
+            const removeByClass = (type) => {
+                http.delete('/api/entity-esp/' + type).then(() => {
+                    const index = entitiesConfigList.value.findIndex(e => e.type == type);
                     if (index >= 0) {
                         entitiesConfigList.value.splice(index, 1);
                     }
-                    delete entitiesConfigMap.value[clazz];
+                    delete entitiesConfigMap.value[type];
                 });
             };
 
@@ -146,7 +146,7 @@ export function createComponent(template) {
                 if (config.boundingBoxMaxDistance == '') {
                     config.boundingBoxMaxDistance = null;
                 }
-                http.put('/api/entities/' + config.clazz, config);
+                http.put('/api/entity-esp/' + config.type, config);
             };
 
             const showApiRef = () => {
@@ -166,7 +166,7 @@ export function createComponent(template) {
 
             const saveCode = () => {
                 http.post('/api/entity-esp-code', {
-                    clazz: selectedConfig.value.clazz,
+                    type: selectedConfig.value.type,
                     code: code.value
                 }).then(response => {
                     if (response.ok) {
@@ -185,10 +185,10 @@ export function createComponent(template) {
             });
 
             const loadEntityConfigs = () => {
-                http.get('/api/entities').then(response => {
+                http.get('/api/entity-esp').then(response => {
                     entitiesConfigList.value = response;
                     const map = {};
-                    response.forEach(c => map[c.clazz] = c);
+                    response.forEach(c => map[c.type] = c);
                     entitiesConfigMap.value = map;
                 });
             };

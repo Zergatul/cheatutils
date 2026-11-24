@@ -74,7 +74,7 @@ public class GetScriptTool implements McpTool {
     public McpToolCallResult invoke(JsonElement arguments) throws IOException {
         ScriptRef ref = new Gson().fromJson(arguments, ScriptRef.class);
         ScriptSlot descriptor = ScriptWorkspace.INSTANCE.get(ref.type());
-        String code = descriptor.getInstance(ref.identifier()).code;
+        String code = descriptor.getInstance(ref.identifier()).code();
         JsonObject result = new JsonObjectBuilder()
                 .withProperty("code", code)
                 .build();

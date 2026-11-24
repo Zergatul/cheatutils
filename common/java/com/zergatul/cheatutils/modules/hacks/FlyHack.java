@@ -1,68 +1,78 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FlyHackConfig;
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.FlyHackConfig;
 import com.zergatul.cheatutils.extensions.ServerboundMovePlayerPacketExtension;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class FlyHack implements Module {
 
-    public static final FlyHack instance = new FlyHack();
+    public static final FlyHack INSTANCE = new FlyHack();
 
+    private final SettingHandle<FlyHackConfig> settings = Settings.get(FlyHackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean abilitiesOverridden;
     private boolean oldFlying;
     private float oldFlyingSpeed;
     private int tickCounter;
-    private ServerboundMovePlayerPacket antiKickPacket;
+    private @Nullable ServerboundMovePlayerPacket antiKickPacket;
 
     private FlyHack() {
-        NetworkPacketsController.instance.addClientPacketHandler(this::onClientPacket);
+        Events.BeforeSendPacketClientThread.add(this::onClientPacket);
         Events.BeforePlayerAiStep.add(this::onBeforePlayerAiStep);
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("fly-hack", settings, FlyHackConfig.class);
     }
 
-    private void onClientPacket(NetworkPacketsController.ClientPacketArgs args) {
-        if (args.packet instanceof ServerboundMovePlayerPacket packet) {
+    public SettingHandle<FlyHackConfig> getSettings() {
+        return settings;
+    }
+
+    private boolean onClientPacket(Connection connection, Packet<?> packet) {
+        if (packet instanceof ServerboundMovePlayerPacket movePlayerPacket) {
             if (antiKickPacket != null) {
-                if (args.packet != antiKickPacket) {
+                if (movePlayerPacket != antiKickPacket) {
                     // don't send other movement packets for 1 tick
-                    args.skip = true;
-                    return;
+                    return false;
                 }
             }
 
-            FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
-            if (config.enabled) {
-                ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(config.onGroundFlag);
+            FlyHackConfig config = settings.get();
+            if (config.enabled()) {
+                ((ServerboundMovePlayerPacketExtension) packet).setOnGround_CU(config.onGroundFlag());
             }
         }
+        return true;
     }
 
     private void onBeforePlayerAiStep() {
         assert mc.player != null;
 
-        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
-        if (config.enabled) {
+        FlyHackConfig config = settings.get();
+        if (config.enabled()) {
             LocalPlayer player = mc.player;
 
             oldFlying = player.getAbilities().flying;
             oldFlyingSpeed = player.getAbilities().getFlyingSpeed();
 
             player.getAbilities().flying = true;
-            if (config.overrideFlyingSpeed) {
-                player.getAbilities().setFlyingSpeed(config.flyingSpeed);
+            if (config.overrideFlyingSpeed()) {
+                player.getAbilities().setFlyingSpeed(config.flyingSpeed());
             }
 
             abilitiesOverridden = true;
@@ -86,8 +96,8 @@ public class FlyHack implements Module {
             antiKickPacket = null;
         }
 
-        FlyHackConfig config = ConfigStore.instance.getConfig().flyHackConfig;
-        if (!config.enabled || !config.vanillaAntiFlyBypass) {
+        FlyHackConfig config = settings.get();
+        if (!config.enabled() || !config.vanillaAntiFlyBypass()) {
             tickCounter = 0;
             return;
         }
@@ -98,34 +108,15 @@ public class FlyHack implements Module {
         }
 
         tickCounter++;
-        if (tickCounter >= config.antiFlyInterval) {
+        if (tickCounter >= config.antiFlyInterval()) {
             tickCounter = 0;
             antiKickPacket = new ServerboundMovePlayerPacket.Pos(
                     player.getX(),
-                    player.getY() - config.antiFlyDistance,
+                    player.getY() - config.antiFlyDistance(),
                     player.getZ(),
-                    config.onGroundFlag,
+                    config.onGroundFlag(),
                     false);
-
-            NetworkPacketsController.instance.sendBufferedPacket(antiKickPacket);
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<FlyHackConfig> {
-
-        public WebApi() {
-            super("fly-hack", FlyHackConfig.class);
-        }
-
-        @Override
-        protected FlyHackConfig getConfig() {
-            return ConfigStore.instance.getConfig().flyHackConfig;
-        }
-
-        @Override
-        protected void setConfig(FlyHackConfig config) {
-            ConfigStore.instance.getConfig().flyHackConfig = config;
+            PacketUtils.send(player, antiKickPacket, new ServerboundClientTickEndPacket());
         }
     }
 }

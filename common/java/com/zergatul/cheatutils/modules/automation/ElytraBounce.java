@@ -1,17 +1,18 @@
 package com.zergatul.cheatutils.modules.automation;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ElytraBounceConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ElytraBounceConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 
 public class ElytraBounce implements Module {
 
-    public static final ElytraBounce instance = new ElytraBounce();
+    public static final ElytraBounce INSTANCE = new ElytraBounce();
 
+    private final SettingHandle<ElytraBounceConfig> settings = Settings.get(ElytraBounceConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean enabled;
     private boolean wasFallFlying;
@@ -24,9 +25,13 @@ public class ElytraBounce implements Module {
         Events.AfterPlayerAiStep.add(this::onPlayerAiEnd);
         Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("elytra-bounce", settings, ElytraBounceConfig.class);
 
         state = State.NONE;
+    }
+
+    public SettingHandle<ElytraBounceConfig> getSettings() {
+        return settings;
     }
 
     public boolean isEnabled() {
@@ -61,13 +66,13 @@ public class ElytraBounce implements Module {
                 mc.player.input.makeJump();
                 if (--remainingTicks == 0) {
                     state = State.JUMP_DELAY;
-                    remainingTicks = getConfig().betweenJumpsTicks;
+                    remainingTicks = getConfig().betweenJumpsTicks();
                 }
             }
             case JUMP_DELAY -> {
                 if (--remainingTicks == 0) {
                     state = State.SECOND_JUMP;
-                    remainingTicks = getConfig().secondJumpTicks;
+                    remainingTicks = getConfig().secondJumpTicks();
                 }
             }
             case SECOND_JUMP -> {
@@ -89,12 +94,12 @@ public class ElytraBounce implements Module {
 
         if (state == State.NONE && wasFallFlying && mc.player.onGround()) {
             state = State.FIRST_JUMP;
-            remainingTicks = getConfig().firstJumpTicks;
+            remainingTicks = getConfig().firstJumpTicks();
         }
     }
 
     private ElytraBounceConfig getConfig() {
-        return ConfigStore.instance.getConfig().elytraBounceConfig;
+        return settings.get();
     }
 
     private enum State {
@@ -102,22 +107,5 @@ public class ElytraBounce implements Module {
         FIRST_JUMP,
         JUMP_DELAY,
         SECOND_JUMP,
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ElytraBounceConfig> {
-
-        public WebApi() {
-            super("elytra-bounce", ElytraBounceConfig.class);
-        }
-
-        @Override
-        protected ElytraBounceConfig getConfig() {
-            return ConfigStore.instance.getConfig().elytraBounceConfig;
-        }
-
-        @Override
-        protected void setConfig(ElytraBounceConfig config) {
-            ConfigStore.instance.getConfig().elytraBounceConfig = config;
-        }
     }
 }

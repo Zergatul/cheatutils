@@ -2,11 +2,11 @@ package com.zergatul.cheatutils.modules.utilities;
 
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ContainerScreenRenderEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ContainerSummaryConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ContainerSummaryConfig;
 import com.zergatul.cheatutils.modules.Module;
 import com.zergatul.cheatutils.utils.ItemUtils;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -31,8 +31,9 @@ import java.util.stream.Collectors;
 
 public class ContainerSummary implements Module {
 
-    public static final ContainerSummary instance = new ContainerSummary();
+    public static final ContainerSummary INSTANCE = new ContainerSummary();
 
+    private final SettingHandle<ContainerSummaryConfig> settings = Settings.get(ContainerSummaryConfig.class);
     private static final int BORDER_WIDTH = 2;
     private final Minecraft mc = Minecraft.getInstance();
     private final Identifier background = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
@@ -40,12 +41,16 @@ public class ContainerSummary implements Module {
     private ContainerSummary() {
         Events.ContainerScreenAfterRenderContents.add(this::onAfterRenderContents);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("container-summary", settings, ContainerSummaryConfig.class);
+    }
+
+    public SettingHandle<ContainerSummaryConfig> getSettings() {
+        return settings;
     }
 
     private void onAfterRenderContents(ContainerScreenRenderEvent event) {
-        ContainerSummaryConfig config = ConfigStore.instance.getConfig().containerSummaryConfig;
-        if (!config.enabled) {
+        ContainerSummaryConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
 
@@ -63,7 +68,7 @@ public class ContainerSummary implements Module {
                 }
             }
         } else {
-            if (config.showForInventory) {
+            if (config.showForInventory()) {
                 if (event.screen() instanceof InventoryScreen) {
                     for (Slot slot : slots) {
                         if (slot.container instanceof ResultContainer) {
@@ -325,23 +330,6 @@ public class ContainerSummary implements Module {
 
         public int getHeight() {
             return height;
-        }
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ContainerSummaryConfig> {
-
-        public WebApi() {
-            super("container-summary", ContainerSummaryConfig.class);
-        }
-
-        @Override
-        protected ContainerSummaryConfig getConfig() {
-            return ConfigStore.instance.getConfig().containerSummaryConfig;
-        }
-
-        @Override
-        protected void setConfig(ContainerSummaryConfig config) {
-            ConfigStore.instance.getConfig().containerSummaryConfig = config;
         }
     }
 }

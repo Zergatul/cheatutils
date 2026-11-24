@@ -57,6 +57,12 @@ class CheatUtilsGradlePlugin : Plugin<Project> {
         val ext = project.extensions.create("cheatutils", CheatUtilsExtension::class.java, project)
         val generatedResourcesDir = project.layout.buildDirectory.dir("generated/resources")
 
+        project.tasks.register("generateImmutableConfigs", GenerateImmutableConfigsTask::class.java) {
+            group = "code generation"
+            description = "Generates builders and with-methods for immutable module configs."
+            sourceDirectory.set(project.layout.projectDirectory.dir("../common/java/com/zergatul/cheatutils/configs"))
+        }
+
         // add generated resources directory to source sets
         project.plugins.withType(JavaPlugin::class.java) {
             val sourceSets = project.extensions.getByType(SourceSetContainer::class.java)

@@ -9,7 +9,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 public class ClientTickEndExecutor extends EventExecutor {
 
-    public static final ClientTickEndExecutor instance = new ClientTickEndExecutor();
+    public static final ClientTickEndExecutor INSTANCE = new ClientTickEndExecutor();
 
     private final List<PendingTask> tasks = new ArrayList<>();
 

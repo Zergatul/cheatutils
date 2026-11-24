@@ -10,7 +10,7 @@ import java.util.concurrent.RejectedExecutionException;
 // Callers should not use this executor when no level is loaded.
 public class InGameTickEndExecutor extends EventExecutor {
 
-    public static final InGameTickEndExecutor instance = new InGameTickEndExecutor();
+    public static final InGameTickEndExecutor INSTANCE = new InGameTickEndExecutor();
 
     private final List<PendingTask> tasks = new ArrayList<>();
 

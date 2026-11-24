@@ -1,10 +1,11 @@
 package com.zergatul.cheatutils.modules.hacks;
 
-import com.zergatul.cheatutils.controllers.NetworkPacketsController;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.utils.PacketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
@@ -27,7 +28,7 @@ import java.util.Optional;
 
 public class TeleportHack {
 
-    public static final TeleportHack instance = new TeleportHack();
+    public static final TeleportHack INSTANCE = new TeleportHack();
 
     private final Minecraft mc = Minecraft.getInstance();
 
@@ -166,21 +167,18 @@ public class TeleportHack {
         return enforceVanillaPacketBudget && packets > 5;
     }
 
-    private void sendTeleport(Vec3 target, int packets) {
+    private void sendTeleport(Vec3 target, int packetsCount) {
         assert mc.player != null;
 
-        for (int i = 0; i < packets - 1; i++) {
-            NetworkPacketsController.instance.sendBufferedPacket(
-                    new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
-            NetworkPacketsController.instance.sendBufferedPacket(new ServerboundClientTickEndPacket());
+        List<Packet<?>> packets = new ArrayList<>();
+        packets.add(new ServerboundClientTickEndPacket());
+        for (int i = 0; i < packetsCount - 1; i++) {
+            packets.add(new ServerboundMovePlayerPacket.StatusOnly(mc.player.onGround(), mc.player.horizontalCollision));
+            packets.add(new ServerboundClientTickEndPacket());
         }
-
-        NetworkPacketsController.instance.sendBufferedPacket(
-                new ServerboundMovePlayerPacket.Pos(
-                        target.x, target.y, target.z,
-                        willBeOnGround(target),
-                        true));
-        NetworkPacketsController.instance.sendPacket(new ServerboundClientTickEndPacket());
+        packets.add(new ServerboundMovePlayerPacket.Pos(target, willBeOnGround(target), true));
+        packets.add(new ServerboundClientTickEndPacket());
+        PacketUtils.send(mc.player, packets);
 
         mc.player.snapTo(target);
     }
@@ -189,8 +187,8 @@ public class TeleportHack {
         assert mc.level != null;
         assert mc.player != null;
 
-        Vec3 origin = FreeCam.instance.isActive() ? FreeCam.instance.getPosition() : mc.player.getEyePosition();
-        Vec3 direction = FreeCam.instance.isActive() ? FreeCam.instance.getViewVector() : mc.player.getViewVector(1f);
+        Vec3 origin = FreeCam.INSTANCE.isActive() ? FreeCam.INSTANCE.getPosition() : mc.player.getEyePosition();
+        Vec3 direction = FreeCam.INSTANCE.isActive() ? FreeCam.INSTANCE.getViewVector() : mc.player.getViewVector(1f);
         Vec3 destination = origin.add(direction.x * distance, direction.y * distance, direction.z * distance);
         ClipContext context = new ClipContext(origin, destination, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mc.player);
         return BlockGetter.traverseBlocks(origin, destination, context, (ctx, pos) -> {

@@ -1,7 +1,9 @@
 package com.zergatul.cheatutils.tests;
 
 import com.google.gson.Gson;
-import com.zergatul.cheatutils.configs.AutoToolConfig;
+import com.google.gson.GsonBuilder;
+import com.zergatul.cheatutils.configs.adapters.ImmutableConfigAdapterFactory;
+import com.zergatul.cheatutils.configs.modules.AutoToolConfig;
 import com.zergatul.cheatutils.modules.automation.AutoTool;
 import com.zergatul.cheatutils.utils.AutoToolMiningSpeedCalculator;
 import net.minecraft.SharedConstants;
@@ -60,8 +62,8 @@ public class AutoToolTests {
 
     @Test
     public void speedPriorityStillAccountsForWrongToolPenalty() throws Exception {
-        AutoToolConfig config = new AutoToolConfig();
-        config.priority = AutoToolConfig.PRIORITY_SPEED;
+        AutoToolConfig config = AutoToolConfig.defaults();
+        config = config.withPriority(AutoToolConfig.PRIORITY_SPEED);
         ItemStack gold = tool(Blocks.DIAMOND_ORE, 12, false);
         ItemStack diamond = tool(Blocks.DIAMOND_ORE, 8, true);
 
@@ -71,40 +73,38 @@ public class AutoToolTests {
 
     @Test
     public void speedPriorityAllowsFasterUnsuitableTool() throws Exception {
-        AutoToolConfig config = new AutoToolConfig();
-        config.priority = AutoToolConfig.PRIORITY_SPEED;
+        AutoToolConfig config = AutoToolConfig.defaults();
+        config = config.withPriority(AutoToolConfig.PRIORITY_SPEED);
         ItemStack goldEfficiencyFive = tool(Blocks.DIAMOND_ORE, 38, false);
         ItemStack iron = tool(Blocks.DIAMOND_ORE, 6, true);
 
         assertSame(goldEfficiencyFive, select(config, Blocks.DIAMOND_ORE, goldEfficiencyFive, iron));
         assertSame(goldEfficiencyFive, select(config, Blocks.DIAMOND_ORE, iron, goldEfficiencyFive));
-        config.priority = AutoToolConfig.PRIORITY_DROP;
+        config = config.withPriority(AutoToolConfig.PRIORITY_DROP);
         assertSame(iron, select(config, Blocks.DIAMOND_ORE, goldEfficiencyFive, iron));
     }
 
     @Test
     public void priorityDefaultsAndSerialization() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapterFactory(new ImmutableConfigAdapterFactory())
+                .create();
         AutoToolConfig config = gson.fromJson("{\"mode\":\"HOTBAR\"}", AutoToolConfig.class);
-        config.sanitize();
-        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority);
+        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority());
 
-        config.priority = AutoToolConfig.PRIORITY_SPEED;
+        config = config.withPriority(AutoToolConfig.PRIORITY_SPEED);
         AutoToolConfig loaded = gson.fromJson(gson.toJson(config), AutoToolConfig.class);
-        loaded.sanitize();
-        assertEquals(AutoToolConfig.PRIORITY_SPEED, loaded.priority);
+        assertEquals(AutoToolConfig.PRIORITY_SPEED, loaded.priority());
     }
 
     @Test
     public void invalidPriorityFallsBackToDropPriority() {
-        AutoToolConfig config = new AutoToolConfig();
-        config.priority = null;
-        config.sanitize();
-        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority);
+        AutoToolConfig config = AutoToolConfig.defaults();
+        config = config.withPriority(null);
+        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority());
 
-        config.priority = "INVALID";
-        config.sanitize();
-        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority);
+        config = config.withPriority("INVALID");
+        assertEquals(AutoToolConfig.PRIORITY_DROP, config.priority());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class AutoToolTests {
     }
 
     private static ItemStack select(Block block, ItemStack... stacks) throws Exception {
-        return select(new AutoToolConfig(), block, stacks);
+        return select(AutoToolConfig.defaults(), block, stacks);
     }
 
     private static ItemStack select(AutoToolConfig config, Block block, ItemStack... stacks) throws Exception {
@@ -212,7 +212,7 @@ public class AutoToolTests {
                 .add(Attributes.SUBMERGED_MINING_SPEED)
                 .build());
         AutoToolMiningSpeedCalculator calculator = new AutoToolMiningSpeedCalculator(attributes, Map.of(), false);
-        Object selected = findBest.invoke(AutoTool.instance, config, entries, block.defaultBlockState(), calculator);
+        Object selected = findBest.invoke(AutoTool.INSTANCE, config, entries, block.defaultBlockState(), calculator);
         if (selected == null) {
             return null;
         }

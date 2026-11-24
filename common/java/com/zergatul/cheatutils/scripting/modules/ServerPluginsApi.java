@@ -10,20 +10,20 @@ public class ServerPluginsApi {
             Returns server plugin extracted from custom command list packet
             """)
     public String[] get() {
-        return ServerPlugins.instance.getPlugins();
+        return ServerPlugins.INSTANCE.getPlugins();
     }
 
     @MethodDescription("""
             Returns server plugin extracted from custom command list packet, but with bukkit:ver filter
             """)
     public String[] getBukkit() {
-        return ServerPlugins.instance.getBukkitPlugins();
+        return ServerPlugins.INSTANCE.getBukkitPlugins();
     }
 
     @MethodDescription("""
             Resets stored list of plugins, so module will request new lists once you call get()/getBukkit()
             """)
     public void reset() {
-        ServerPlugins.instance.reset();
+        ServerPlugins.INSTANCE.reset();
     }
 }

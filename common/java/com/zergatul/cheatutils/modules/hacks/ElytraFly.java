@@ -1,10 +1,10 @@
 package com.zergatul.cheatutils.modules.hacks;
 
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ElytraHackConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.ElytraHackConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
@@ -12,8 +12,9 @@ import net.minecraft.world.phys.Vec3;
 
 public class ElytraFly implements Module {
 
-    public static final ElytraFly instance = new ElytraFly();
+    public static final ElytraFly INSTANCE = new ElytraFly();
 
+    private final SettingHandle<ElytraHackConfig> settings = Settings.get(ElytraHackConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private boolean applySpeedLimit;
     private boolean applyFly;
@@ -24,17 +25,21 @@ public class ElytraFly implements Module {
         Events.AfterPlayerAiStep.add(this::onAfterPlayerAiStep);
         Events.InGameTickEnd.add(this::onClientTickEnd);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("elytra-hack", settings, ElytraHackConfig.class);
+    }
+
+    public SettingHandle<ElytraHackConfig> getSettings() {
+        return settings;
     }
 
     public Vec3 onModifyDeltaMove(Vec3 delta) {
         assert mc.player != null;
 
         if (applySpeedLimit) {
-            ElytraHackConfig config = ConfigStore.instance.getConfig().elytraHackConfig;
+            ElytraHackConfig config = settings.get();
             double speed = delta.length() * 20;
-            if (speed > config.maxSpeed) {
-                delta = delta.normalize().scale(config.maxSpeed / 20);
+            if (speed > config.maxSpeed()) {
+                delta = delta.normalize().scale(config.maxSpeed() / 20);
             }
 
             mc.player.setDeltaMovement(delta);
@@ -52,8 +57,8 @@ public class ElytraFly implements Module {
     }
 
     private void onClientTickStart() {
-        ElytraHackConfig config = ConfigStore.instance.getConfig().elytraHackConfig;
-        if (!config.enabled) {
+        ElytraHackConfig config = settings.get();
+        if (!config.enabled()) {
             return;
         }
         if (mc.player == null) {
@@ -63,7 +68,7 @@ public class ElytraFly implements Module {
             return;
         }
 
-        switch (config.method) {
+        switch (config.method()) {
             case ElytraHackConfig.CREATIVE_FLY -> {
                 applyFly = true;
                 applySpeedLimit = true;
@@ -72,14 +77,14 @@ public class ElytraFly implements Module {
                 Vec3 delta = mc.player.getDeltaMovement();
                 ClientInput input = mc.player.input;
                 if (input.keyPresses.jump()) {
-                    delta = delta.add(0, config.vanillaFlyVerticalAcceleration / 20, 0);
+                    delta = delta.add(0, config.vanillaFlyVerticalAcceleration() / 20, 0);
                 }
                 if (input.keyPresses.shift()) {
-                    delta = delta.subtract(0, config.vanillaFlyVerticalAcceleration / 20, 0);
+                    delta = delta.subtract(0, config.vanillaFlyVerticalAcceleration() / 20, 0);
                 }
 
                 float yaw = (float) Math.toRadians(mc.player.getYRot());
-                Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)).scale(config.vanillaFlyHorizontalAcceleration / 20);
+                Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw)).scale(config.vanillaFlyHorizontalAcceleration() / 20);
                 if (input.keyPresses.forward()) {
                     delta = delta.add(forward);
                 }
@@ -95,11 +100,11 @@ public class ElytraFly implements Module {
     private void onBeforePlayerAiStep() {
         assert mc.player != null;
 
-        ElytraHackConfig config = ConfigStore.instance.getConfig().elytraHackConfig;
+        ElytraHackConfig config = settings.get();
         if (applyFly) {
             mc.player.stopFallFlying();
             mc.player.getAbilities().flying = true;
-            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed / 100));
+            mc.player.getAbilities().setFlyingSpeed((float) (config.maxSpeed() / 100));
         }
     }
 
@@ -117,22 +122,5 @@ public class ElytraFly implements Module {
 
     private void onClientTickEnd() {
         applySpeedLimit = false;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<ElytraHackConfig> {
-
-        public WebApi() {
-            super("elytra-hack", ElytraHackConfig.class);
-        }
-
-        @Override
-        protected ElytraHackConfig getConfig() {
-            return ConfigStore.instance.getConfig().elytraHackConfig;
-        }
-
-        @Override
-        protected void setConfig(ElytraHackConfig config) {
-            ConfigStore.instance.getConfig().elytraHackConfig = config;
-        }
     }
 }

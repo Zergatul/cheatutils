@@ -31,8 +31,8 @@ public abstract class MixinKeyboardHandler {
             if (options.keyDebugModifier.matches(event)) {
                 return;
             }
-            if (this.minecraft.gui.screen() != null && InvMove.instance.shouldPassEvents(this.minecraft.gui.screen())) {
-                if (InvMove.instance.isContainerScreenKey(key)) {
+            if (this.minecraft.gui.screen() != null && InvMove.INSTANCE.shouldPassEvents(this.minecraft.gui.screen())) {
+                if (InvMove.INSTANCE.isContainerScreenKey(key)) {
                     return;
                 }
                 KeyMapping.set(key, true);

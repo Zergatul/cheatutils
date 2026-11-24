@@ -1,12 +1,10 @@
 package com.zergatul.cheatutils.scripting.modules;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ScaffoldConfig;
+import com.zergatul.cheatutils.configs.modules.ScaffoldConfig;
+import com.zergatul.cheatutils.modules.hacks.Scaffold;
 
-public class ScaffoldApi extends ModuleApi<ScaffoldConfig> {
-
-    @Override
-    protected ScaffoldConfig getConfig() {
-        return ConfigStore.instance.getConfig().scaffoldConfig;
+public class ScaffoldApi extends SettingHandleApi<ScaffoldConfig> {
+    public ScaffoldApi() {
+        super(Scaffold.INSTANCE.getSettings());
     }
 }

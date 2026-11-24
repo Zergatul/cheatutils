@@ -3,13 +3,13 @@ package com.zergatul.cheatutils.modules.esp;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.PlayerTurnByMouseEvent;
 import com.zergatul.cheatutils.common.events.SimpleCancellableEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.FreeCamConfig;
+import com.zergatul.cheatutils.configs.SettingHandle;
+import com.zergatul.cheatutils.configs.Settings;
+import com.zergatul.cheatutils.configs.modules.FreeCamConfig;
 import com.zergatul.cheatutils.modules.Module;
-import com.zergatul.cheatutils.render.LineRenderer;
+import com.zergatul.cheatutils.render.InstancedLineRenderer;
 import com.zergatul.cheatutils.utils.FreeCamPath;
 import com.zergatul.cheatutils.common.events.RenderWorldLastEvent;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiBase;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.CameraType;
@@ -32,8 +32,9 @@ import java.util.concurrent.TimeUnit;
 
 public class FreeCam implements Module {
 
-    public static final FreeCam instance = new FreeCam();
+    public static final FreeCam INSTANCE = new FreeCam();
 
+    private final SettingHandle<FreeCamConfig> settings = Settings.get(FreeCamConfig.class);
     private final static int REMEMBER_STATE_DELAY_MS = 400;
 
     private final Minecraft mc = Minecraft.getInstance();
@@ -73,8 +74,12 @@ public class FreeCam implements Module {
         Events.AfterRenderWorld.add(this::onRenderWorldLast);
         Events.LevelUnload.add(this::onWorldUnload);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("free-cam", settings, FreeCamConfig.class);
         WebApiRegistry.INSTANCE.register(new PathWebApi());
+    }
+
+    public SettingHandle<FreeCamConfig> getSettings() {
+        return settings;
     }
 
     public boolean isActive() {
@@ -191,7 +196,7 @@ public class FreeCam implements Module {
             mc.gameRenderer.checkEntityPostEffect(mc.options.getCameraType().isFirstPerson() ? mc.getCameraEntity() : null);
         }
 
-        if (getConfig().rememberInputState) {
+        if (getConfig().rememberInputState()) {
             doNotMoveFreeCamBefore = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(REMEMBER_STATE_DELAY_MS);
         }
 
@@ -237,7 +242,7 @@ public class FreeCam implements Module {
     public boolean onRenderCrosshairIsFirstPerson(boolean isFirstPerson) {
         FreeCamConfig config = getConfig();
         if (active) {
-            return !cameraLock && !eyeLock && !followCamera && config.target;
+            return !cameraLock && !eyeLock && !followCamera && config.target();
         } else {
             return isFirstPerson;
         }
@@ -245,7 +250,7 @@ public class FreeCam implements Module {
 
     public boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
         FreeCamConfig config = getConfig();
-        if (active && config.renderHands && !cameraLock && !eyeLock && !followCamera) {
+        if (active && config.renderHands() && !cameraLock && !eyeLock && !followCamera) {
             return true;
         } else {
             return cameraType.isFirstPerson();
@@ -254,7 +259,7 @@ public class FreeCam implements Module {
 
     public boolean isCameraDetached(boolean value) {
         FreeCamConfig config = getConfig();
-        if (active && config.renderHands && !cameraLock && !eyeLock && !followCamera) {
+        if (active && config.renderHands() && !cameraLock && !eyeLock && !followCamera) {
             return false;
         } else {
             return value;
@@ -325,10 +330,10 @@ public class FreeCam implements Module {
             float forwardImpulse = !cameraLock ? (input.keyPresses.forward() ? 1 : 0) + (input.keyPresses.backward() ? -1 : 0) : 0;
             float leftImpulse = !cameraLock ? (input.keyPresses.left() ? 1 : 0) + (input.keyPresses.right() ? -1 : 0) : 0;
             float upImpulse = !cameraLock ? ((input.keyPresses.jump() ? 1 : 0) + (input.keyPresses.shift() ? -1 : 0)) : 0;
-            double slowdown = Math.pow(config.slowdownFactor, frameTime);
-            forwardVelocity = combineMovement(forwardVelocity, forwardImpulse, frameTime, config.acceleration, slowdown);
-            leftVelocity = combineMovement(leftVelocity, leftImpulse, frameTime, config.acceleration, slowdown);
-            upVelocity = combineMovement(upVelocity, upImpulse, frameTime, config.acceleration, slowdown);
+            double slowdown = Math.pow(config.slowdownFactor(), frameTime);
+            forwardVelocity = combineMovement(forwardVelocity, forwardImpulse, frameTime, config.acceleration(), slowdown);
+            leftVelocity = combineMovement(leftVelocity, leftImpulse, frameTime, config.acceleration(), slowdown);
+            upVelocity = combineMovement(upVelocity, upImpulse, frameTime, config.acceleration(), slowdown);
 
             double dx = (double) this.forwards.x() * forwardVelocity + (double) this.left.x() * leftVelocity;
             double dy = (double) this.forwards.y() * forwardVelocity + upVelocity + (double) this.left.y() * leftVelocity;
@@ -337,8 +342,8 @@ public class FreeCam implements Module {
             dy *= frameTime;
             dz *= frameTime;
             double speed = new Vec3(dx, dy, dz).length() / frameTime;
-            if (speed > config.maxSpeed) {
-                double factor = config.maxSpeed / speed;
+            if (speed > config.maxSpeed()) {
+                double factor = config.maxSpeed() / speed;
                 forwardVelocity *= factor;
                 leftVelocity *= factor;
                 upVelocity *= factor;
@@ -346,7 +351,7 @@ public class FreeCam implements Module {
                 dy *= factor;
                 dz *= factor;
             }
-            if (!config.rememberInputState || doNotMoveFreeCamBefore < currTime) {
+            if (!config.rememberInputState() || doNotMoveFreeCamBefore < currTime) {
                 x += dx;
                 y += dy;
                 z += dz;
@@ -390,7 +395,7 @@ public class FreeCam implements Module {
             return;
         }
 
-        LineRenderer renderer = LineRenderer.getInstance();
+        InstancedLineRenderer renderer = InstancedLineRenderer.getInstance();
         renderer.begin();
 
         for (int i = 1; i < path.size(); i++) {
@@ -418,7 +423,7 @@ public class FreeCam implements Module {
 
     public boolean shouldOverrideCameraEntityPosition(Entity entity) {
         FreeCamConfig config = getConfig();
-        if (active && !cameraLock && !eyeLock && !followCamera && config.target) {
+        if (active && !cameraLock && !eyeLock && !followCamera && config.target()) {
             return entity == mc.getCameraEntity() && picking || freecamHitResultPicking;
         } else {
             return false;
@@ -432,7 +437,7 @@ public class FreeCam implements Module {
         if (cameraLock || eyeLock || followCamera) {
             return null;
         }
-        if (!getConfig().target) {
+        if (!getConfig().target()) {
             return null;
         }
 
@@ -446,7 +451,7 @@ public class FreeCam implements Module {
     }
 
     private ClientInput createFreeCamInput(ClientInput playerInput) {
-        if (getConfig().rememberInputState) {
+        if (getConfig().rememberInputState()) {
             return new FreeCamInput(new Input(
                     playerInput.keyPresses.forward(),
                     playerInput.keyPresses.backward(),
@@ -483,7 +488,7 @@ public class FreeCam implements Module {
     private void calculateVectors() {
         rotation.rotationYXZ(
                 -yRot * ((float)Math.PI / 180F),
-                (getConfig().spectatorFlight ? 0 : xRot) * ((float)Math.PI / 180F),
+                (getConfig().spectatorFlight() ? 0 : xRot) * ((float)Math.PI / 180F),
                 0.0F);
         forwards.set(0.0F, 0.0F, 1.0F).rotate(rotation);
         up.set(0.0F, 1.0F, 0.0F).rotate(rotation);
@@ -506,7 +511,7 @@ public class FreeCam implements Module {
     }
 
     private FreeCamConfig getConfig() {
-        return ConfigStore.instance.getConfig().freeCamConfig;
+        return settings.get();
     }
 
     private static class FreeCamInput extends ClientInput {
@@ -527,23 +532,6 @@ public class FreeCam implements Module {
         }
     }
 
-    private static class WebApi extends SimpleModuleConfigWebApi<FreeCamConfig> {
-
-        public WebApi() {
-            super("free-cam", FreeCamConfig.class);
-        }
-
-        @Override
-        protected FreeCamConfig getConfig() {
-            return ConfigStore.instance.getConfig().freeCamConfig;
-        }
-
-        @Override
-        protected void setConfig(FreeCamConfig config) {
-            ConfigStore.instance.getConfig().freeCamConfig = config;
-        }
-    }
-
     private class PathWebApi extends WebApiBase {
 
         @Override
@@ -553,7 +541,7 @@ public class FreeCam implements Module {
 
         @Override
         public String get() {
-            return gson.toJson(FreeCam.instance.path.get());
+            return gson.toJson(FreeCam.INSTANCE.path.get());
         }
 
         @Override

@@ -3,7 +3,9 @@ package com.zergatul.cheatutils.collections;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 public class ImmutableList<E> implements Iterable<E> {
@@ -43,6 +45,60 @@ public class ImmutableList<E> implements Iterable<E> {
         for (int i = 0; i < array.length; i++) {
             if (Objects.equals(array[i], item)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean contains(Predicate<E> predicate) {
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public ImmutableList<E> distinct() {
+        if (array.length <= 1) {
+            return this;
+        }
+
+        Set<E> set = new HashSet<>(array.length);
+        for (E element : this) {
+            set.add(element);
+        }
+
+        if (set.size() == array.length) {
+            return this;
+        } else {
+            return new ImmutableList<>(set);
+        }
+    }
+
+    public <K> ImmutableList<E> distinctBy(Function<E, K> selector) {
+        if (isEmpty()) {
+            return this;
+        }
+
+        Set<K> seen = new HashSet<>(array.length);
+        List<E> result = new ArrayList<>(array.length);
+        for (E element : this) {
+            if (seen.add(selector.apply(element))) {
+                result.add(element);
+            }
+        }
+
+        return new ImmutableList<>(result);
+    }
+
+    public boolean intersects(ImmutableList<E> other) {
+        for (int i1 = 0; i1 < this.array.length; i1++) {
+            for (int i2 = 0; i2 < other.array.length; i2++) {
+                if (Objects.equals(this.array[i1], other.array[i2])) {
+                    return true;
+                }
             }
         }
         return false;
@@ -115,14 +171,61 @@ public class ImmutableList<E> implements Iterable<E> {
         return new ImmutableList<>(newArray);
     }
 
-    public ImmutableList<E> removeIf(Predicate<E> predicate) {
-        List<E> list = new ArrayList<>();
-        for (E e: this) {
-            if (!predicate.test(e)) {
-                list.add(e);
+    @SuppressWarnings("unchecked")
+    public ImmutableList<E> removeAll(Predicate<E> predicate) {
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                List<E> list = new ArrayList<>();
+                for (int j = 0; j < i; j++) {
+                    list.add((E) array[j]);
+                }
+                for (int j = i + 1; j < array.length; j++) {
+                    if (!predicate.test((E) array[j])) {
+                        list.add((E) array[j]);
+                    }
+                }
+                return new ImmutableList<>(list);
             }
         }
-        return new ImmutableList<>(list.toArray());
+
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<E> replaceFirst(Predicate<E> predicate, UnaryOperator<E> map) {
+        List<E> list = new ArrayList<>(array.length);
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test((E) array[i])) {
+                list.add(map.apply((E) array[i]));
+                for (int j = i + 1; j < array.length; j++) {
+                    list.add((E) array[j]);
+                }
+                return new ImmutableList<>(list);
+            } else {
+                list.add((E) array[i]);
+            }
+        }
+
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public ImmutableList<E> replaceAll(UnaryOperator<E> map) {
+        for (int i = 0; i < array.length; i++) {
+            E oldElement = (E) array[i];
+            E newElement = map.apply(oldElement);
+            if (oldElement != newElement) {
+                Object[] newArray = new Object[array.length];
+                System.arraycopy(array, 0, newArray, 0, i);
+                newArray[i] = newElement;
+                for (int j = i + 1; j < array.length; j++) {
+                    newArray[j] = map.apply((E) array[j]);
+                }
+                return new ImmutableList<>(newArray);
+            }
+        }
+
+        return this;
     }
 
     public ImmutableList<E> set(int index, E element) {
@@ -144,6 +247,20 @@ public class ImmutableList<E> implements Iterable<E> {
 
     public int size() {
         return array.length;
+    }
+
+    public ImmutableList<E> sorted(Comparator<E> comparator) {
+        if (array.length <= 1) {
+            return this;
+        }
+
+        List<E> list = new ArrayList<>(array.length);
+        for (E e : this) {
+            list.add(e);
+        }
+        list.sort(comparator);
+
+        return new ImmutableList<>(list);
     }
 
     @SuppressWarnings("unchecked")

@@ -1,11 +1,12 @@
 package com.zergatul.cheatutils.mixins.common;
 
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.ElytraTunnelConfig;
-import com.zergatul.cheatutils.configs.MovementHackConfig;
+import com.zergatul.cheatutils.configs.modules.ElytraTunnelConfig;
+import com.zergatul.cheatutils.configs.modules.MovementHackConfig;
 import com.zergatul.cheatutils.modules.esp.entity.EntityEsp;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
 import com.zergatul.cheatutils.helpers.MixinEntityHelper;
+import com.zergatul.cheatutils.modules.hacks.ElytraTunnel;
+import com.zergatul.cheatutils.modules.hacks.Movement;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -21,7 +22,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getTeamColor()I", cancellable = true)
     private void onGetTeamColor(CallbackInfoReturnable<Integer> info) {
-        Integer color = EntityEsp.instance.getOutlineColor((Entity) (Object) this);
+        Integer color = EntityEsp.INSTANCE.getOutlineColor((Entity) (Object) this);
         if (color != null) {
             info.setReturnValue(color);
             info.cancel();
@@ -30,7 +31,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getEyePosition(F)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onGetEyePosition(float partialTickTime, CallbackInfoReturnable<Vec3> info) {
-        FreeCam freeCam = FreeCam.instance;
+        FreeCam freeCam = FreeCam.INSTANCE;
         if (freeCam.shouldOverrideCameraEntityPosition((Entity) (Object) this)) {
             info.setReturnValue(new Vec3(freeCam.getX(), freeCam.getY(), freeCam.getZ()));
         }
@@ -38,7 +39,7 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("HEAD"), method = "getViewVector(F)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onGetViewVector(float partialTickTime, CallbackInfoReturnable<Vec3> info) {
-        FreeCam freeCam = FreeCam.instance;
+        FreeCam freeCam = FreeCam.INSTANCE;
         if (freeCam.shouldOverrideCameraEntityPosition((Entity) (Object) this)) {
             info.setReturnValue(Entity.calculateViewVector(freeCam.getXRot(), freeCam.getYRot()));
         }
@@ -46,15 +47,15 @@ public abstract class MixinEntity {
 
     @Inject(at = @At("TAIL"), method = "collide(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private void onCollide(Vec3 vec31, CallbackInfoReturnable<Vec3> info) {
-        ElytraTunnelConfig config = ConfigStore.instance.getConfig().elytraTunnelConfig;
-        if (config.enabled) {
+        ElytraTunnelConfig config = ElytraTunnel.INSTANCE.getSettings().get();
+        if (config.enabled()) {
             Entity entity = (Entity) (Object) this;
             if (entity instanceof LocalPlayer player) {
                 if (player.isFallFlying()) {
                     Vec3 result = info.getReturnValue();
                     AABB aabb = player.getBoundingBox().expandTowards(result);
-                    if (aabb.maxY > config.limit) {
-                        info.setReturnValue(new Vec3(result.x, result.y - (aabb.maxY - config.limit), result.z));
+                    if (aabb.maxY > config.limit()) {
+                        info.setReturnValue(new Vec3(result.x, result.y - (aabb.maxY - config.limit()), result.z));
                     }
                 }
             }
@@ -80,10 +81,10 @@ public abstract class MixinEntity {
     @Inject(at = @At("TAIL"), method = "getInputVector(Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;", cancellable = true)
     private static void onGetInputVector(Vec3 vec3, float f, float f1, CallbackInfoReturnable<Vec3> info) {
         if (MixinEntityHelper.insideMoveRelativeLocalPlayer) {
-            MovementHackConfig config = ConfigStore.instance.getConfig().movementHackConfig;
-            if (config.scaleInputVector) {
+            MovementHackConfig config = Movement.INSTANCE.getSettings().get();
+            if (config.scaleInputVector()) {
                 Vec3 vec = info.getReturnValue();
-                info.setReturnValue(new Vec3(vec.x * config.inputVectorFactor, vec.y, vec.z * config.inputVectorFactor));
+                info.setReturnValue(new Vec3(vec.x * config.inputVectorFactor(), vec.y, vec.z * config.inputVectorFactor()));
             }
         }
     }

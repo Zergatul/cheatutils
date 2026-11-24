@@ -2,11 +2,13 @@ package com.zergatul.cheatutils.controllers;
 
 import com.zergatul.cheatutils.common.Events;
 import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 
 public class TpsCounterController {
 
-    public static final TpsCounterController instance = new TpsCounterController();
+    public static final TpsCounterController INSTANCE = new TpsCounterController();
 
     private static final int SIZE = 20;
 
@@ -16,9 +18,9 @@ public class TpsCounterController {
 
     private TpsCounterController() {
         Events.ClientPlayerLoggingIn.add(this::onLoggingIn);
-        Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
+        Events.BeforeHandlePacketClientThread.add(this::onServerPacket);
         Events.DimensionChange.add(this::onDimensionChange);
-        NetworkPacketsController.instance.addServerPacketHandler(this::onServerPacket);
+        Events.ClientPlayerLoggingOut.add(this::onLoggingOut);
     }
 
     public double getTps() {
@@ -45,11 +47,12 @@ public class TpsCounterController {
         counter = 0;
     }
 
-    private void onServerPacket(NetworkPacketsController.ServerPacketArgs args) {
-        if (args.packet instanceof ClientboundSetTimePacket packet) {
+    private boolean onServerPacket(PacketListener listener, Packet<?> packet) {
+        if (packet instanceof ClientboundSetTimePacket setTimePacket) {
             localTime[counter % SIZE] = System.nanoTime();
-            gameTime[counter % SIZE] = packet.gameTime();
+            gameTime[counter % SIZE] = setTimePacket.gameTime();
             counter++;
         }
+        return true;
     }
 }

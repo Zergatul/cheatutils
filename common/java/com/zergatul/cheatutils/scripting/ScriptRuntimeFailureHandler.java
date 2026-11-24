@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 
 public class ScriptRuntimeFailureHandler {
 
-    public static final ScriptRuntimeFailureHandler instance = new ScriptRuntimeFailureHandler(true);
+    public static final ScriptRuntimeFailureHandler INSTANCE = new ScriptRuntimeFailureHandler(true);
 
     private static final int RUNTIME_FAILURE_PRIORITY = Integer.MAX_VALUE;
     private static final int MAX_NOTIFICATION_HISTORY = 100;
@@ -195,7 +195,7 @@ public class ScriptRuntimeFailureHandler {
 
     static @Nullable Throwable unwrapFailure(@Nullable Throwable throwable) {
         Throwable failure = throwable;
-        while ((failure instanceof CompletionException || failure instanceof ExecutionException) && failure.getCause() != null) {
+        while ((failure instanceof CompletionException || failure instanceof ExecutionException || failure instanceof ScriptInitializationException) && failure.getCause() != null) {
             failure = failure.getCause();
         }
         if (failure == null ||

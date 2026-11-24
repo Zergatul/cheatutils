@@ -10,20 +10,20 @@ public class BedrockBreakerApi {
             Attempts to break bedrock block in your crosshair
             """)
     public void process() {
-        BedrockBreaker.instance.process();
+        BedrockBreaker.INSTANCE.process();
     }
 
     @MethodDescription("""
             Attempts to break nearby bedrock blocks in range, one by one
             """)
     public void processNearby() {
-        BedrockBreaker.instance.processNearby();
+        BedrockBreaker.INSTANCE.processNearby();
     }
 
     @MethodDescription("""
             Returns current status of the module. For debugging purposes
             """)
     public String getStatus() {
-        return BedrockBreaker.instance.getStatus();
+        return BedrockBreaker.INSTANCE.getStatus();
     }
 }

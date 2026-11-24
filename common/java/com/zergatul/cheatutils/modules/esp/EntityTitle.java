@@ -7,9 +7,9 @@ import com.mojang.authlib.services.ProfileResult;
 import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.concurrent.ClientTickEndExecutor;
-import com.zergatul.cheatutils.configs.ConfigStore;
-import com.zergatul.cheatutils.configs.EntityTitleConfig;
-import com.zergatul.cheatutils.configs.EntityEspConfig;
+import com.zergatul.cheatutils.configs.*;
+import com.zergatul.cheatutils.configs.modules.EntityEspEntry;
+import com.zergatul.cheatutils.configs.modules.EntityTitleConfig;
 import com.zergatul.cheatutils.entities.EntityLike;
 import com.zergatul.cheatutils.font.*;
 import com.zergatul.cheatutils.common.events.RenderGuiEvent;
@@ -19,7 +19,6 @@ import com.zergatul.cheatutils.modules.esp.entity.EntityEspScriptRuntime;
 import com.zergatul.cheatutils.modules.visuals.LogoutSpots;
 import com.zergatul.cheatutils.render.CacheItemRenderer;
 import com.zergatul.cheatutils.ui.*;
-import com.zergatul.cheatutils.web.SimpleModuleConfigWebApi;
 import com.zergatul.cheatutils.web.WebApiRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -37,24 +36,29 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.awt.*;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
+@NullMarked
 public class EntityTitle implements FontBackendHolder {
 
-    public static final EntityTitle instance = new EntityTitle();
+    public static final EntityTitle INSTANCE = new EntityTitle();
 
+    private final SettingHandle<EntityTitleConfig> settings = Settings.get(EntityTitleConfig.class);
     private final Minecraft mc = Minecraft.getInstance();
     private final ArrayList<StylizedTextChunk> buffer = new ArrayList<>();
     private final StringBuilder builder = new StringBuilder();
 
     private final LoadingCache<UUID, Optional<String>> usernameCache = CacheBuilder
             .newBuilder()
-            .expireAfterWrite(1, TimeUnit.HOURS)
+            .expireAfterWrite(Duration.of(1, ChronoUnit.HOURS))
             .build(new CacheLoader<>() {
                 @Override
                 public Optional<String> load(UUID uuid) {
@@ -73,22 +77,27 @@ public class EntityTitle implements FontBackendHolder {
     private final List<EntityEntry> entities = new ArrayList<>();
 
     private boolean titleFontChanged;
-    private CompletableFuture<FontBackend> titleFontBackendFuture;
-    private FontRenderer titleFontRenderer;
+    private @Nullable CompletableFuture<FontBackend> titleFontBackendFuture;
+    private @Nullable FontRenderer titleFontRenderer;
 
     private boolean enchantmentFontChanged;
-    private CompletableFuture<FontBackend> enchantmentFontBackendFuture;
-    private FontRenderer enchantmentFontRenderer;
+    private @Nullable CompletableFuture<FontBackend> enchantmentFontBackendFuture;
+    private @Nullable FontRenderer enchantmentFontRenderer;
 
     private int itemScale;
 
     private EntityTitle() {
         Events.PreRenderGui.add(this::onPreRenderGui);
         Events.AfterRenderWorld.add(this::onRenderWorld, 20);
+        settings.observe(this::onConfigChanged);
 
-        WebApiRegistry.INSTANCE.register(new WebApi());
+        WebApiRegistry.INSTANCE.register("entity-title", settings, EntityTitleConfig.class);
 
         FontBackendHolders.add(this);
+    }
+
+    public SettingHandle<EntityTitleConfig> getSettings() {
+        return settings;
     }
 
     @Override
@@ -102,12 +111,23 @@ public class EntityTitle implements FontBackendHolder {
         return false;
     }
 
-    public void onTitleFontChange() {
-        ClientTickEndExecutor.instance.execute(() -> titleFontChanged = true);
-    }
-
-    public void onEnchantmentFontChange() {
-        ClientTickEndExecutor.instance.execute(() -> enchantmentFontChanged = true);
+    private void onConfigChanged(SettingNotificationReason reason, EntityTitleConfig prev, EntityTitleConfig curr) {
+        ClientTickEndExecutor.INSTANCE.execute(() -> {
+            switch (reason) {
+                case INITIAL -> {
+                    titleFontChanged = true;
+                    enchantmentFontChanged = true;
+                }
+                case PROFILE_LOAD, UPDATE -> {
+                    if (!prev.titleFont().equals(curr.titleFont())) {
+                        titleFontChanged = true;
+                    }
+                    if (!prev.enchantmentFont().equals(curr.enchantmentFont())) {
+                        enchantmentFontChanged = true;
+                    }
+                }
+            }
+        });
     }
 
     private void onPreRenderGui(RenderGuiEvent event) {
@@ -117,7 +137,7 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        if (!EntityEsp.instance.isEnabled() || !EspGlobal.enabled) {
+        if (!EntityEsp.INSTANCE.isEnabled() || !EspGlobal.enabled) {
             return;
         }
 
@@ -128,10 +148,10 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
-        itemScale = config.itemScale == 0 ? mc.getWindow().getGuiScale() : config.itemScale;
+        EntityTitleConfig config = settings.get();
+        itemScale = config.itemScale() == 0 ? mc.getWindow().getGuiScale() : config.itemScale();
 
-        CacheItemRenderer renderer = CacheItemRenderer.instance;
+        CacheItemRenderer renderer = CacheItemRenderer.INSTANCE;
         renderer.beginFrame(itemScale);
 
         List<ItemStack> items = new ArrayList<>();
@@ -143,7 +163,7 @@ public class EntityTitle implements FontBackendHolder {
             items.clear();
             entry.entityLike.collectEquipment(items);
             for (ItemStack item : items) {
-                CacheItemRenderer.instance.requestItem(entry.entityLike.getEquipmentOwner(), item);
+                CacheItemRenderer.INSTANCE.requestItem(entry.entityLike.getEquipmentOwner(), item);
             }
         }
 
@@ -158,29 +178,29 @@ public class EntityTitle implements FontBackendHolder {
             return;
         }
 
-        EntityTitleConfig config = ConfigStore.instance.getConfig().entityTitleConfig;
+        EntityTitleConfig config = settings.get();
 
         if (titleFontChanged) {
-            titleFontBackendFuture = FontLibrary.instance.createBackend(config.titleFont.asFontParameters());
+            titleFontBackendFuture = FontLibrary.INSTANCE.createBackend(config.titleFont().asFontParameters());
             // titleFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             titleFontChanged = false;
         }
 
         if (enchantmentFontChanged) {
-            enchantmentFontBackendFuture = FontLibrary.instance.createBackend(config.enchantmentFont.asFontParameters());
+            enchantmentFontBackendFuture = FontLibrary.INSTANCE.createBackend(config.enchantmentFont().asFontParameters());
             // enchantmentFontRenderer = null; // more smooth transition, but shows prev font for few frames?
             enchantmentFontChanged = false;
         }
 
         if (titleFontBackendFuture != null) {
             if (titleFontBackendFuture.isDone()) {
-                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont.asFontRenderDetails());
+                titleFontRenderer = titleFontBackendFuture.join().createFontRenderer(config.titleFont().asFontRenderDetails());
                 titleFontBackendFuture = null;
             }
         }
         if (enchantmentFontBackendFuture != null) {
             if (enchantmentFontBackendFuture.isDone()) {
-                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont.asFontRenderDetails());
+                enchantmentFontRenderer = enchantmentFontBackendFuture.join().createFontRenderer(config.enchantmentFont().asFontRenderDetails());
                 enchantmentFontBackendFuture = null;
             }
         }
@@ -278,7 +298,7 @@ public class EntityTitle implements FontBackendHolder {
     private void prepareEntityList(Vec3 cameraPos, float partialTickTime) {
         assert mc.level != null;
 
-        ImmutableList<EntityEspConfig> entityConfigs = ConfigStore.instance.getConfig().entities.configs;
+        ImmutableList<EntityEspEntry> entityConfigs = EntityEsp.INSTANCE.getSettings().get().entries();
 
         for (Entity entity : mc.level.entitiesForRendering()) {
             if (entity == mc.player && mc.options.getCameraType() == CameraType.FIRST_PERSON) {
@@ -295,21 +315,21 @@ public class EntityTitle implements FontBackendHolder {
             boolean useRaw = false;
             boolean showOwner = false;
             StylizedText title = null;
-            for (EntityEspConfig entityConfig : entityConfigs) {
-                if (!entityConfig.enabled || !entityConfig.drawTitles) {
+            for (EntityEspEntry entityConfig : entityConfigs) {
+                if (!entityConfig.enabled() || !entityConfig.drawTitles()) {
                     continue;
                 }
                 if (!entityConfig.isValidEntity(entity)) {
                     continue;
                 }
 
-                if (distanceSqr < entityConfig.maxDistance * entityConfig.maxDistance) {
+                if (distanceSqr < entityConfig.maxDistance() * entityConfig.maxDistance()) {
                     drawTitles = true;
-                    showDefaultNames |= entityConfig.showDefaultNames;
-                    useRaw |= entityConfig.useRawNames;
-                    showHp |= entityConfig.showHp;
-                    showEquippedItems |= entityConfig.showEquippedItems;
-                    showOwner |= entityConfig.showOwner;
+                    showDefaultNames |= entityConfig.showDefaultNames();
+                    useRaw |= entityConfig.useRawNames();
+                    showHp |= entityConfig.showHp();
+                    showEquippedItems |= entityConfig.showEquippedItems();
+                    showOwner |= entityConfig.showOwner();
                     if (title == null) {
                         title = EntityEspScriptRuntime.INSTANCE.getTitleOverride(entityConfig, entity);
                     }
@@ -338,7 +358,7 @@ public class EntityTitle implements FontBackendHolder {
     }
 
     private void addDisconnectedPlayers(Vec3 view) {
-        List<EntityLike> players = LogoutSpots.instance.getDisconnectedPlayers();
+        List<EntityLike> players = LogoutSpots.INSTANCE.getDisconnectedPlayers();
         if (players.isEmpty()) {
             return;
         }
@@ -350,17 +370,17 @@ public class EntityTitle implements FontBackendHolder {
         boolean useRaw = false;
         boolean showOwner = false;
 
-        for (EntityEspConfig entityConfig : ConfigStore.instance.getConfig().entities.configs) {
-            if (!entityConfig.enabled || !entityConfig.drawTitles) {
+        for (EntityEspEntry entityConfig : EntityEsp.INSTANCE.getSettings().get().entries()) {
+            if (!entityConfig.enabled() || !entityConfig.drawTitles()) {
                 continue;
             }
-            if (entityConfig.clazz.isAssignableFrom(RemotePlayer.class)) {
+            if (entityConfig.type().isAssignableFrom(RemotePlayer.class)) {
                 drawTitles = true;
-                showDefaultNames |= entityConfig.showDefaultNames;
-                useRaw |= entityConfig.useRawNames;
-                showHp |= entityConfig.showHp;
-                showEquippedItems |= entityConfig.showEquippedItems;
-                showOwner |= entityConfig.showOwner;
+                showDefaultNames |= entityConfig.showDefaultNames();
+                useRaw |= entityConfig.useRawNames();
+                showHp |= entityConfig.showHp();
+                showEquippedItems |= entityConfig.showEquippedItems();
+                showOwner |= entityConfig.showOwner();
             }
         }
 
@@ -382,7 +402,7 @@ public class EntityTitle implements FontBackendHolder {
         }
     }
 
-    private StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
+    private @Nullable StylizedText getEntityText(EntityTitleConfig config, EntityEntry entry) {
         if (entry.title != null) {
             return entry.title;
         }
@@ -406,7 +426,7 @@ public class EntityTitle implements FontBackendHolder {
                 builder.delete(0, builder.length());
                 FormattedCharSequence sequence = component.getVisualOrderText();
                 ColorHolder last = new ColorHolder();
-                sequence.accept((unknown, style, character) -> {
+                sequence.accept((_, style, character) -> {
                     int color = style.getColor() != null ? (style.getColor().getValue() | 0xFF000000) : Color.WHITE.getRGB();
                     if (last.color != color) {
                         if (!builder.isEmpty()) {
@@ -431,9 +451,9 @@ public class EntityTitle implements FontBackendHolder {
         if (entry.showHp && entry.entityLike.hasHealth()) {
             if (text == null) {
                 text = new StylizedText();
-                text.append(config.hpPrefix, 0xFFFF5555);
+                text.append(config.hpPrefix(), 0xFFFF5555);
             } else {
-                text.append(" " + config.hpPrefix, 0xFFFF5555);
+                text.append(" " + config.hpPrefix(), 0xFFFF5555);
             }
             text.append(String.valueOf(entry.entityLike.getHealth()), Color.WHITE.getRGB());
 
@@ -480,8 +500,9 @@ public class EntityTitle implements FontBackendHolder {
             boolean showHp,
             boolean showEquippedItems,
             boolean showOwner,
-            StylizedText title,
-            StylizedText suffix) {}
+            @Nullable StylizedText title,
+            @Nullable StylizedText suffix
+    ) {}
 
     private static class EnchantmentEntry {
 
@@ -578,30 +599,5 @@ public class EntityTitle implements FontBackendHolder {
 
     private static class ColorHolder {
         public int color;
-    }
-
-    private static final class WebApi extends SimpleModuleConfigWebApi<EntityTitleConfig> {
-
-        public WebApi() {
-            super("entity-title", EntityTitleConfig.class);
-        }
-
-        @Override
-        protected EntityTitleConfig getConfig() {
-            return ConfigStore.instance.getConfig().entityTitleConfig;
-        }
-
-        @Override
-        protected void setConfig(EntityTitleConfig config) {
-            EntityTitleConfig oldConfig = ConfigStore.instance.getConfig().entityTitleConfig;
-            ConfigStore.instance.getConfig().entityTitleConfig = config;
-
-            if (!oldConfig.titleFont.equals(config.titleFont)) {
-                EntityTitle.instance.onTitleFontChange();
-            }
-            if (!oldConfig.enchantmentFont.equals(config.enchantmentFont)) {
-                EntityTitle.instance.onEnchantmentFontChange();
-            }
-        }
     }
 }

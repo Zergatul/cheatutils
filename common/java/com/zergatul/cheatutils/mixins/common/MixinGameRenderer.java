@@ -4,11 +4,13 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.zergatul.cheatutils.common.Events;
 import com.zergatul.cheatutils.common.events.ResizeEvent;
-import com.zergatul.cheatutils.configs.ConfigStore;
+import com.zergatul.cheatutils.configs.modules.BobHurtConfig;
 import com.zergatul.cheatutils.extensions.LevelRendererExtension;
 import com.zergatul.cheatutils.modules.esp.FreeCam;
+import com.zergatul.cheatutils.modules.visuals.BobHurt;
 import com.zergatul.cheatutils.modules.visuals.FullBright;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.GameRenderState;
@@ -40,7 +42,12 @@ public abstract class MixinGameRenderer {
             method = "renderItemInHand",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z", ordinal = 0))
     private boolean onRenderItemInHandIsFirstPerson(CameraType cameraType) {
-        return FreeCam.instance.onRenderItemInHandIsFirstPerson(cameraType);
+        return FreeCam.INSTANCE.onRenderItemInHandIsFirstPerson(cameraType);
+    }
+
+    @Inject(method = "extract", at = @At("HEAD"))
+    private void onBeforeExtract(DeltaTracker deltaTracker, boolean advanceGameTime, CallbackInfo ci) {
+        Events.RenderStateExtractStart.trigger();
     }
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -71,19 +78,20 @@ public abstract class MixinGameRenderer {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private boolean onModifyIsFirstPerson3dCrosshair(boolean isFirstPerson) {
         // maybe need priority=2000 like in another call site
-        return FreeCam.instance.onRenderCrosshairIsFirstPerson(isFirstPerson);
+        return FreeCam.INSTANCE.onRenderCrosshairIsFirstPerson(isFirstPerson);
     }
 
     @Inject(at = @At("HEAD"), method = "bobHurt", cancellable = true)
     private void onBobHurt(final CameraRenderState cameraState, final PoseStack poseStack, CallbackInfo info) {
-        if (ConfigStore.instance.getConfig().bobHurtConfig.enabled) {
+        BobHurtConfig config = BobHurt.INSTANCE.getSettings().get();
+        if (config.enabled()) {
             info.cancel();
         }
     }
 
     @Inject(at = @At("HEAD"), method = "nightVisionScale", cancellable = true)
     private static void onBeforeNightVisionScale(LivingEntity camera, float a, CallbackInfoReturnable<Float> info) {
-        if (FullBright.instance.shouldFakeNighVision()) {
+        if (FullBright.INSTANCE.shouldFakeNighVision()) {
             info.setReturnValue(1f);
         }
     }

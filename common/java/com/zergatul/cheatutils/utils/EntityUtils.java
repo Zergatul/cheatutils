@@ -95,9 +95,9 @@ public class EntityUtils {
         Set<Class<?>> interfaces = new HashSet<>();
 
         finalClasses.forEach(ei -> {
-            forEachInterface(ei.clazz, interfaces::add);
+            forEachInterface(ei.type, interfaces::add);
 
-            Class<?> clazz = ei.clazz.getSuperclass();
+            Class<?> clazz = ei.type.getSuperclass();
             while (Entity.class.isAssignableFrom(clazz)) {
                 try {
                     EntityInfo baseInfo = new EntityInfo(clazz);
@@ -124,7 +124,7 @@ public class EntityUtils {
 
         classMap = new HashMap<>(classes.size());
         for (EntityInfo info: classes) {
-            classMap.put(info.clazz.getName(), info);
+            classMap.put(info.type.getName(), info);
         }
     }
 
@@ -194,52 +194,52 @@ public class EntityUtils {
 
     public static class EntityInfo {
 
-        public Class<?> clazz;
+        public Class<?> type;
         public boolean isInterface;
         public String simpleName;
         public List<Class<?>> baseClasses;
         public List<Class<?>> interfaces;
         public String id;
 
-        public EntityInfo(Class<?> clazz) {
-            this(clazz, null);
+        public EntityInfo(Class<?> type) {
+            this(type, null);
         }
 
-        public EntityInfo(Class<?> clazz, String id) {
-            if (clazz.isInterface()) {
-                this.clazz = clazz;
-                simpleName = getSimpleName(clazz);
+        public EntityInfo(Class<?> type, String id) {
+            if (type.isInterface()) {
+                this.type = type;
+                simpleName = getSimpleName(type);
                 isInterface = true;
             } else {
-                if (!Entity.class.isAssignableFrom(clazz)) {
+                if (!Entity.class.isAssignableFrom(type)) {
                     throw new IllegalStateException("Not supported.");
                 }
 
-                this.clazz = clazz;
-                simpleName = getSimpleName(clazz);
+                this.type = type;
+                simpleName = getSimpleName(type);
 
                 this.id = id;
 
                 baseClasses = new ArrayList<>();
-                while (clazz != Entity.class) {
-                    clazz = clazz.getSuperclass();
-                    baseClasses.add(clazz);
+                while (type != Entity.class) {
+                    type = type.getSuperclass();
+                    baseClasses.add(type);
                 }
 
                 interfaces = new ArrayList<>();
-                forEachInterface(this.clazz, iface -> interfaces.add(iface));
+                forEachInterface(this.type, iface -> interfaces.add(iface));
             }
         }
 
         @Override
         public int hashCode() {
-            return clazz.hashCode();
+            return type.hashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof EntityInfo ei) {
-                return ei.clazz == clazz;
+                return ei.type == type;
             } else {
                 return false;
             }

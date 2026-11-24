@@ -30,6 +30,7 @@ export function createComponent(template) {
             const blocksConfigList = ref(null);
             const blocksConfigMap = ref(null);
             const selectedConfig = ref(null);
+            const selectConfigBlocksSnapshot = ref(null);
             const blockListFiltered = ref(null);
             const showRefs = ref(false);
             const refs = ref(null);
@@ -135,7 +136,7 @@ export function createComponent(template) {
                     code.value = selectedConfig.value.code;
                 } else {
                     selectedConfig.value = null;
-                    http.post('/api/blocks-add', id).then(response => {
+                    http.post('/api/blocks', id).then(response => {
                         selectedConfig.value = response;
                         blocksConfigList.value.push(selectedConfig.value);
                         blocksConfigMap.value[id] = selectedConfig.value;
@@ -147,12 +148,13 @@ export function createComponent(template) {
 
             const editGroup = () => {
                 state.value = 'edit-group';
+                selectConfigBlocksSnapshot.value = [...selectedConfig.value.blocks];
                 restartEditGroupSearch();
             };
 
             const remove = () => {
                 if (selectedConfig.value) {
-                    http.delete('/api/blocks/' + encodeURIComponent(selectedConfig.value.blocks[0])).then(() => {
+                    http.delete('/api/blocks/' + encodeURIComponent(getEntryKey(selectedConfig.value.blocks))).then(() => {
                         blocksConfigList.value = blocksConfigList.value.filter(c => c != selectedConfig.value);
                         selectedConfig.value.blocks.forEach(id => {
                             delete blocksConfigMap.value[id];
@@ -163,10 +165,12 @@ export function createComponent(template) {
                 }
             };
 
-            const removeById = id => {
-                http.delete('/api/blocks/' + encodeURIComponent(id)).then(() => {
-                    blocksConfigList.value = blocksConfigList.value.filter(b => !b.blocks.includes(id));
-                    delete blocksConfigMap.value[id];
+            const removeByBlocks = blocks => {
+                http.delete('/api/blocks/' + encodeURIComponent(getEntryKey(blocks))).then(() => {
+                    blocksConfigList.value = blocksConfigList.value.filter(b => !b.blocks.includes(blocks[0]));
+                    blocks.forEach(id => {
+                        delete blocksConfigMap.value[id];
+                    });
                 });
             };
 
@@ -174,14 +178,18 @@ export function createComponent(template) {
                 http.post('/api/rescan-chunks');
             };
 
-            const update = config => {
+            const getEntryKey = blocks => blocks.join(';');
+
+            const update = config => updateByBlocksKey(config.blocks, config);
+
+            const updateByBlocksKey = (blocks, config) => {
                 if (config.tracerMaxDistance == '') {
                     config.tracerMaxDistance = null;
                 }
                 if (config.boundingBoxMaxDistance == '') {
                     config.boundingBoxMaxDistance = null;
                 }
-                http.post('/api/blocks', config);
+                return http.put('/api/blocks/' + encodeURIComponent(getEntryKey(blocks)), config);
             };
 
             const expandGroup = config => {
@@ -206,18 +214,43 @@ export function createComponent(template) {
                 return blocksConfigMap.value[block.id] == selectedConfig.value;
             };
 
-            const groupEditSetCheckboxSelected = (block, event) => {
-                if (event.target.checked) {
-                    if (!selectedConfig.value.blocks.some(id => id == block.id)) {
-                        selectedConfig.value.blocks.push(block.id);
-                        blocksConfigMap.value[block.id] = selectedConfig.value;
-                        update(selectedConfig.value);
+            // below approach is not perfect, but we don't want to overcomplicate web UI code handling over localhost
+            // when user performs clicks manually, the worst he can do is quickly check/uncheck checkbox
+            // this case is handled correctly
+            let updateGroupPending = false;
+            let queuedGroupUpdate = false;
+            const updateGroup = async () => {
+                if (updateGroupPending) {
+                    queuedGroupUpdate = true;
+                    return;
+                }
+
+                updateGroupPending = true;
+                try {
+                    const updatedConfig = await updateByBlocksKey(selectConfigBlocksSnapshot.value, selectedConfig.value);
+                    selectConfigBlocksSnapshot.value = updatedConfig.blocks;
+                } finally {
+                    updateGroupPending = false;
+                    if (queuedGroupUpdate) {
+                        queuedGroupUpdate = false;
+                        nextTick(updateGroup);
                     }
+                }
+            }
+
+            const groupEditSetCheckboxSelected = async (block, event) => {
+                if (event.target.checked) {
+                    if (selectedConfig.value.blocks.some(id => id == block.id)) {
+                        return;
+                    }
+                    selectedConfig.value.blocks.push(block.id);
+                    blocksConfigMap.value[block.id] = selectedConfig.value;
                 } else {
                     selectedConfig.value.blocks = selectedConfig.value.blocks.filter(id => id != block.id);
                     delete blocksConfigMap.value[block.id];
-                    update(selectedConfig.value);
                 }
+
+                await updateGroup();
             };
 
             const groupEditIsCheckboxDisabled = block => {
@@ -241,7 +274,7 @@ export function createComponent(template) {
 
             const saveCode = () => {
                 http.post('/api/block-esp-code', {
-                    block: selectedConfig.value.blocks[0],
+                    blocks: selectedConfig.value.blocks,
                     code: code.value
                 }).then(response => {
                     if (response.ok) {
@@ -356,6 +389,7 @@ export function createComponent(template) {
                 blocksConfigList,
                 blocksConfigMap,
                 selectedConfig,
+                selectConfigBlocksSnapshot,
                 blockListFiltered,
                 disableBlockRendering,
                 showRefs,
@@ -374,7 +408,7 @@ export function createComponent(template) {
                 openEdit,
                 editGroup,
                 remove,
-                removeById,
+                removeByBlocks,
                 rescan,
                 update,
                 expandGroup,

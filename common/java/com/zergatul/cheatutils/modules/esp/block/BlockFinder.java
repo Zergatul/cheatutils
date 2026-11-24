@@ -1,9 +1,6 @@
 package com.zergatul.cheatutils.modules.esp.block;
 
-import com.zergatul.cheatutils.collections.ImmutableList;
 import com.zergatul.cheatutils.common.Events;
-import com.zergatul.cheatutils.configs.BlockEspConfig;
-import com.zergatul.cheatutils.configs.ConfigStore;
 import com.zergatul.cheatutils.common.events.BlockUpdateEvent;
 import com.zergatul.cheatutils.controllers.BlockEventsProcessor;
 import com.zergatul.cheatutils.controllers.SnapshotChunk;
@@ -11,16 +8,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@NullMarked
 public class BlockFinder {
 
-    public static final BlockFinder instance = new BlockFinder();
+    public static final BlockFinder INSTANCE = new BlockFinder();
 
-    public final Map<BlockEspConfig, Set<BlockPos>> blocks = new ConcurrentHashMap<>();
-    public final Set<BlockPos> blackList = ConcurrentHashMap.newKeySet();
+    private final Map<Block, Set<BlockPos>> map = new ConcurrentHashMap<>();
+    private final Set<BlockPos> blackList = ConcurrentHashMap.newKeySet();
 
     private BlockFinder() {
         Events.ChunkLoaded.add(this::onChunkLoaded);
@@ -28,50 +28,63 @@ public class BlockFinder {
         Events.BlockUpdated.add(this::onBlockUpdated);
     }
 
-    public void addConfig(BlockEspConfig config) {
-        BlockEventsProcessor.instance.getExecutor().execute(() -> {
-            blocks.put(config, ConcurrentHashMap.newKeySet());
-            scan(config);
-        });
+    public @Nullable Set<BlockPos> getPositons(Block block) {
+        return map.get(block);
     }
 
-    public void applyConfigs(ImmutableList<BlockEspConfig> configs) {
-        BlockEventsProcessor.instance.getExecutor().execute(() -> {
-            blocks.clear();
-            for (BlockEspConfig config : configs) {
-                blocks.put(config, ConcurrentHashMap.newKeySet());
+    public void trackBlocks(Set<Block> blocks) {
+        BlockEventsProcessor.INSTANCE.getExecutor().execute(() -> {
+            List<Block> added = new ArrayList<>();
+            for (Block block : blocks) {
+                if (!map.containsKey(block)) {
+                    added.add(block);
+                    map.put(block, ConcurrentHashMap.newKeySet());
+                }
             }
-            scanAll();
-        });
-    }
 
-    public void removeConfig(BlockEspConfig config) {
-        blocks.remove(config);
+            if (!added.isEmpty()) {
+                BlockEventsProcessor.INSTANCE.requestScan(added);
+            }
+
+            List<Block> removed = new ArrayList<>();
+            for (Block block : map.keySet()) {
+                if (!blocks.contains(block)) {
+                    removed.add(block);
+                }
+            }
+
+            for (Block block : removed) {
+                map.remove(block);
+            }
+        });
     }
 
     public void clearPositions() {
-        for (Set<BlockPos> set : blocks.values()) {
+        for (Set<BlockPos> set : map.values()) {
             set.clear();
         }
     }
 
     public void rescan() {
-        BlockEventsProcessor.instance.getExecutor().execute(() -> {
+        BlockEventsProcessor.INSTANCE.getExecutor().execute(() -> {
             clearPositions();
             scanAll();
         });
     }
 
     public void addBlackList(BlockPos pos) {
-        BlockFinder.instance.blackList.add(pos);
-        for (Set<BlockPos> set : blocks.values()) {
+        blackList.add(pos);
+        for (Set<BlockPos> set : map.values()) {
             set.remove(pos);
         }
     }
 
+    public void clearBlackList() {
+        blackList.clear();
+    }
+
     private void onChunkLoaded(SnapshotChunk chunk) {
         // need to call unload?
-        Map<Block, BlockEspConfig> map = ConfigStore.instance.getConfig().blocks.getMap();
         int minY = chunk.getMinY();
         int xc = chunk.getPos().x() << 4;
         int zc = chunk.getPos().z() << 4;
@@ -82,7 +95,7 @@ public class BlockFinder {
                 int height = minY + chunk.getHeight(x, z);
                 for (int y = minY; y < height; y++) {
                     BlockState state = chunk.getBlockState(x, y, z);
-                    checkBlock(xw, y, zw, state, map);
+                    checkBlock(xw, y, zw, state);
                 }
             }
         }
@@ -91,34 +104,26 @@ public class BlockFinder {
     private void onChunkUnloaded(ChunkPos pos) {
         final int cx = pos.x();
         final int cz = pos.z();
-        for (Set<BlockPos> set : blocks.values()) {
+        for (Set<BlockPos> set : map.values()) {
             set.removeIf(p -> (p.getX() >> 4) == cx && (p.getZ() >> 4) == cz);
         }
     }
 
     private void onBlockUpdated(BlockUpdateEvent event) {
         BlockPos pos = event.pos();
-        for (Set<BlockPos> set : blocks.values()) {
+        for (Set<BlockPos> set : map.values()) {
             set.remove(pos);
         }
-        checkBlock(pos.getX(), pos.getY(), pos.getZ(), event.state(), ConfigStore.instance.getConfig().blocks.getMap());
-    }
-
-    private void scan(final BlockEspConfig config) {
-        BlockEventsProcessor.instance.requestScan(config);
+        checkBlock(pos.getX(), pos.getY(), pos.getZ(), event.state());
     }
 
     private void scanAll() {
-        BlockEventsProcessor.instance.requestFullScan();
+        BlockEventsProcessor.INSTANCE.requestFullScan();
     }
 
-    public void scanChunkForBlock(SnapshotChunk chunk, BlockEspConfig config) {
-        Set<BlockPos> set = blocks.get(config);
-        if (set == null) {
-            return;
-        }
+    public void scanChunkForBlocks(SnapshotChunk chunk, List<Block> blocks) {
+        Collection<Block> set = blocks.size() <= 4 ? blocks : new HashSet<>(blocks);
 
-        ImmutableList<Block> blockTypes = config.blocks;
         int minY = chunk.getMinY();
         int xc = chunk.getPos().x() << 4;
         int zc = chunk.getPos().z() << 4;
@@ -130,30 +135,27 @@ public class BlockFinder {
                 for (int y = minY; y < height; y++) {
                     BlockState state = chunk.getBlockState(x, y, z);
                     Block block = state.getBlock();
-                    for (int i = 0; i < blockTypes.size(); i++) {
-                        if (block == blockTypes.get(i)) {
-                            set.add(new BlockPos(xw, y, zw));
-                        }
+                    if (set.contains(block)) {
+                        checkBlock(xw, y, zw, state);
                     }
                 }
             }
         }
     }
 
-    private void checkBlock(int x, int y, int z, BlockState state, Map<Block, BlockEspConfig> map) {
+    private void checkBlock(int x, int y, int z, BlockState state) {
         if (state.isAir()) {
             return;
         }
 
-        BlockEspConfig config = map.get(state.getBlock());
-        if (config != null) {
-            Set<BlockPos> set = blocks.get(config);
-            if (set != null) {
-                BlockPos pos = new BlockPos(x, y, z);
-                if (!blackList.contains(pos)) {
-                    set.add(pos);
-                }
-            }
+        Set<BlockPos> positions = map.get(state.getBlock());
+        if (positions == null) {
+            return;
+        }
+
+        BlockPos pos = new BlockPos(x, y, z);
+        if (!blackList.contains(pos)) {
+            positions.add(pos);
         }
     }
 }
